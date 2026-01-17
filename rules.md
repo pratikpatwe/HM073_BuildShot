@@ -18,3 +18,14 @@ We use a strict prefix-based commit system. All messages must be lowercase and d
 - `merge:` Use for manual merge resolution or branch syncs.
 
 
+## 🤝 GitHub Merge & PR Rules
+When merging on GitHub (Pull Requests), use the same prefix system for the **PR Title** and **Merge/Squash Commit Message**.
+
+### Rules:
+- **PR Titles**: Must start with a prefix (e.g., `feat: add login page`).
+- **Squash & Merge**: Always ensure the final commit message follows the `prefix: description` format.
+- **Merge Commits**: If not squashing, the merge commit should be `merge: sync [branch-name] to [target-branch]`.
+
+### Branching:
+- **Main**: Protected branch. No direct pushes.
+- **Feature Branches**: Named after the task or user (e.g., `pratik`, `krishna`, `feat/auth`).
