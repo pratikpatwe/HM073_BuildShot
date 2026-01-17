@@ -22,6 +22,20 @@ export const metadata: Metadata = {
     title: "Kairos - Act at the Right Moment",
     description: "AI-powered life management for finances, habits, and well-being.",
     type: "website",
+    images: [
+      {
+        url: "https://kairos-buildshot.vercel.app/kairos-OGI.png",
+        width: 1200,
+        height: 630,
+        alt: "Kairos - AI-powered life management",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Kairos - Act at the Right Moment",
+    description: "AI-powered life management for finances, habits, and well-being.",
+    images: ["https://kairos-buildshot.vercel.app/kairos-X.png"],
   },
 };
 
