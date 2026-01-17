@@ -51,7 +51,10 @@ export default function WhyKairos() {
                         </div>
                         <h2 className="text-3xl md:text-5xl font-bold mb-6">
                             Life isn't divided into apps —{" "}
-                            <span className="bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">
+                            <span
+                                className="bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent inline-block pt-2 pb-6 pr-10 -mr-10 ml-2"
+                                style={{ fontFamily: "var(--font-momo-signature), cursive" }}
+                            >
                                 so why should your data be?
                             </span>
                         </h2>
@@ -77,19 +80,6 @@ export default function WhyKairos() {
                         ))}
                     </div>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                        transition={{ duration: 0.5, delay: 0.6 }}
-                        className="cursor-target inline-flex items-center gap-3 px-6 py-3 rounded-full border border-emerald-500/30 bg-emerald-500/10"
-                    >
-                        <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
-                            <span className="text-white text-sm font-bold">3</span>
-                        </div>
-                        <span className="text-muted-foreground">
-                            Aligned with <span className="text-emerald-400 font-medium">SDG 3: Good Health and Well-Being</span>
-                        </span>
-                    </motion.div>
 
                     <motion.p
                         initial={{ opacity: 0 }}

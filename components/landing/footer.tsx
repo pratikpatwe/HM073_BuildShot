@@ -22,96 +22,6 @@ export function Footer() {
 
     return (
         <>
-            {/* Regular Footer */}
-            <footer className="relative border-t border-white/10 py-16" ref={ref}>
-                <div className="container mx-auto px-4">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-                        {/* Brand */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                            transition={{ duration: 0.5 }}
-                            className="md:col-span-2"
-                        >
-                            <div className="flex items-center gap-3 mb-4">
-                                <img src="/kairos-logo.svg" alt="Kairos" className="h-10 w-10 rounded-lg" />
-                                <span className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">
-                                    Kairos
-                                </span>
-                            </div>
-                            <p className="text-muted-foreground mb-4 max-w-sm">
-                                Act at the Right Moment. Your AI-powered life management platform for finances, habits, and well-being.
-                            </p>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Mail className="h-4 w-4" />
-                                <span>contact@kairos.app</span>
-                            </div>
-                        </motion.div>
-
-                        {/* Product Links */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                            transition={{ duration: 0.5, delay: 0.1 }}
-                        >
-                            <h4 className="font-semibold mb-4">Product</h4>
-                            <ul className="space-y-3">
-                                <li>
-                                    <Link href="#features" className="text-muted-foreground hover:text-emerald-400 transition-colors">
-                                        Features
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link href="#testimonials" className="text-muted-foreground hover:text-emerald-400 transition-colors">
-                                        Testimonials
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link href="#faq" className="text-muted-foreground hover:text-emerald-400 transition-colors">
-                                        FAQ
-                                    </Link>
-                                </li>
-                            </ul>
-                        </motion.div>
-
-                        {/* Legal Links */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                            transition={{ duration: 0.5, delay: 0.2 }}
-                        >
-                            <h4 className="font-semibold mb-4">Legal</h4>
-                            <ul className="space-y-3">
-                                <li>
-                                    <Link href="/privacy" className="text-muted-foreground hover:text-emerald-400 transition-colors">
-                                        Privacy Policy
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link href="/terms" className="text-muted-foreground hover:text-emerald-400 transition-colors">
-                                        Terms of Service
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link href="/ai-ethics" className="text-muted-foreground hover:text-emerald-400 transition-colors">
-                                        AI & Ethics
-                                    </Link>
-                                </li>
-                            </ul>
-                        </motion.div>
-                    </div>
-
-                    {/* Copyright */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-                        transition={{ duration: 0.5, delay: 0.3 }}
-                        className="mt-12 pt-8 border-t border-white/10 text-center text-sm text-muted-foreground"
-                    >
-                        © 2026 Kairos. All rights reserved.
-                    </motion.div>
-                </div>
-            </footer>
 
             {/* Sticky Footer with TextPressure Effect */}
             <div
@@ -120,7 +30,7 @@ export function Footer() {
                     background: "linear-gradient(135deg, #00C853 0%, #1DB954 100%)"
                 }}
             >
-                <div className="container mx-auto px-4 py-8">
+                <div className="container mx-auto px-4 pt-16 pb-12">
                     <div className="flex flex-col md:flex-row justify-between items-start">
                         {/* Footer Links */}
                         <motion.div
@@ -156,7 +66,7 @@ export function Footer() {
                 </div>
 
                 {/* TextPressure Effect */}
-                <div className="w-full h-[150px] sm:h-[200px] md:h-[250px] relative overflow-hidden">
+                <div className="w-full h-[180px] sm:h-[240px] md:h-[300px] relative mt-6 mb-4 px-4 py-6">
                     <TextPressure
                         text="KAIROS"
                         textColor="#0B0B0B"

@@ -63,7 +63,10 @@ export function FAQSection() {
                     transition={{ duration: 0.6, delay: 0.2 }}
                 >
                     Questions? We've got{" "}
-                    <span className="bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">
+                    <span
+                        className="bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent inline-block pt-2 pb-6 pr-10 -mr-10 ml-2"
+                        style={{ fontFamily: "var(--font-momo-signature), cursive" }}
+                    >
                         answers
                     </span>
                 </motion.h2>

@@ -45,7 +45,10 @@ export default function Testimonials() {
                     </div>
                     <h2 className="text-4xl md:text-5xl font-bold mb-6">
                         What our{" "}
-                        <span className="bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">
+                        <span
+                            className="bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent inline-block pt-2 pb-6 pr-10 -mr-10 ml-2"
+                            style={{ fontFamily: "var(--font-momo-signature), cursive" }}
+                        >
                             users say
                         </span>
                     </h2>

@@ -27,7 +27,10 @@ export default function AISection() {
                         </div>
                         <h2 className="text-4xl md:text-5xl font-bold mb-6">
                             One AI.{" "}
-                            <span className="bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">
+                            <span
+                                className="bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent inline-block pt-2 pb-6 pr-10 -mr-10 ml-2"
+                                style={{ fontFamily: "var(--font-momo-signature), cursive" }}
+                            >
                                 Multiple Contexts.
                             </span>
                         </h2>
