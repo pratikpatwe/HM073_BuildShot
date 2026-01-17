@@ -78,37 +78,37 @@ export default function Home() {
           </span>
         </Link>
 
-        <div className="absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-medium text-muted-foreground transition duration-200 hover:text-foreground md:flex md:space-x-2">
+        <div className="absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-medium text-muted-foreground transition duration-200 hover:text-foreground md:flex md:space-x-2 pointer-events-none">
           <button
-            className="relative px-4 py-2 text-muted-foreground hover:text-emerald-400 transition-colors cursor-pointer"
+            className="relative px-4 py-2 text-muted-foreground hover:text-emerald-400 transition-colors cursor-pointer pointer-events-auto"
             onClick={() => handleNavClick("features")}
           >
             <span className="relative z-20">Features</span>
           </button>
           <button
-            className="relative px-4 py-2 text-muted-foreground hover:text-emerald-400 transition-colors cursor-pointer"
+            className="relative px-4 py-2 text-muted-foreground hover:text-emerald-400 transition-colors cursor-pointer pointer-events-auto"
             onClick={() => handleNavClick("testimonials")}
           >
             <span className="relative z-20">Testimonials</span>
           </button>
           <button
-            className="relative px-4 py-2 text-muted-foreground hover:text-emerald-400 transition-colors cursor-pointer"
+            className="relative px-4 py-2 text-muted-foreground hover:text-emerald-400 transition-colors cursor-pointer pointer-events-auto"
             onClick={() => handleNavClick("faq")}
           >
             <span className="relative z-20">FAQ</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 z-50">
           <Link
-            href="/login"
+            href="/onboarding"
             className="font-medium transition-colors hover:text-emerald-400 text-muted-foreground text-sm cursor-pointer"
           >
             Log In
           </Link>
 
           <Link
-            href="/signup"
+            href="/onboarding?mode=signup"
             className="rounded-full font-bold relative cursor-pointer hover:-translate-y-0.5 transition duration-200 inline-block text-center bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-500/20 px-5 py-2.5 text-sm"
           >
             Sign Up
@@ -166,14 +166,14 @@ export default function Home() {
               </button>
               <div className="border-t border-emerald-500/20 pt-4 mt-4 flex flex-col space-y-3">
                 <Link
-                  href="/login"
+                  href="/onboarding"
                   className="px-4 py-3 text-lg font-medium text-muted-foreground hover:text-emerald-400 transition-colors rounded-lg hover:bg-emerald-500/10 cursor-pointer"
                 >
                   Log In
                 </Link>
                 <Link
-                  href="/signup"
-                  className="px-4 py-3 text-lg font-bold text-center bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-lg shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                  href="/onboarding?mode=signup"
+                  className="px-4 py-3 text-lg font-bold text-center bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-lg shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
                 >
                   Sign Up
                 </Link>

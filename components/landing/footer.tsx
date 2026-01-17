@@ -145,10 +145,10 @@ export function Footer() {
                                     <Link href="/contact">Contact</Link>
                                 </li>
                                 <li className="hover:underline cursor-pointer transition-colors font-medium">
-                                    <Link href="/signup">Sign Up</Link>
+                                    <Link href="/onboarding?mode=signup">Sign Up</Link>
                                 </li>
                                 <li className="hover:underline cursor-pointer transition-colors font-medium">
-                                    <Link href="/login">Login</Link>
+                                    <Link href="/onboarding">Login</Link>
                                 </li>
                             </ul>
                         </motion.div>
