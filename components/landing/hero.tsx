@@ -2,9 +2,15 @@
 
 import { motion } from "framer-motion"
 import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
+
 import { ArrowRight, ArrowUpRight } from "lucide-react"
 import Link from "next/link"
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export default function Hero() {
     const [isLaunchHovered, setIsLaunchHovered] = useState(false)
@@ -12,34 +18,19 @@ export default function Hero() {
 
     return (
         <>
-            <section className="relative overflow-hidden min-h-screen flex flex-col">
+            <section className="relative min-h-screen flex flex-col overflow-x-hidden">
                 {/* Gradient background effects */}
-                <div
-                    className="absolute inset-0 z-0"
-                    style={{
-                        background: "radial-gradient(ellipse 60% 40% at 50% 30%, rgba(0, 200, 83, 0.15), transparent 60%)",
-                    }}
-                />
-                <div
-                    className="absolute bottom-0 left-0 right-0 h-1/2 z-0"
-                    style={{
-                        background: "radial-gradient(ellipse 80% 50% at 50% 100%, rgba(29, 185, 84, 0.1), transparent 60%)",
-                    }}
-                />
+                <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none flex items-center justify-center">
+                    <div
+                        className="w-[600px] h-[400px] rounded-full blur-[100px] opacity-15 translate-y-10"
+                        style={{
+                            background: "radial-gradient(circle, rgba(16, 185, 129, 1) 0%, rgba(0, 0, 0, 0) 70%)"
+                        }}
+                    />
+                </div>
 
-                <div className="container mx-auto px-4 py-24 sm:py-32 relative z-10 flex-1 flex flex-col">
-                    <div className="mx-auto max-w-4xl text-center flex-1 flex flex-col justify-center">
-                        {/* Badge */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5 }}
-                            className="mb-8"
-                        >
-                            <Badge variant="secondary" className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
-                                Act at the Right Moment
-                            </Badge>
-                        </motion.div>
+                <div className="container mx-auto px-4 py-24 sm:py-32 relative z-10 flex-1 flex flex-col overflow-hidden">
+                    <div className="mx-auto max-w-4xl text-center flex-1 flex flex-col justify-center w-full">
 
                         {/* Main Heading */}
                         <motion.div
@@ -48,52 +39,43 @@ export default function Hero() {
                             transition={{ duration: 0.5, delay: 0.1 }}
                             className="mb-8"
                         >
-                            <h1 id="main-title" className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl lg:text-7xl">
-                                Act at the{" "}
+                            <h1 id="main-title" className="font-bold tracking-tight text-foreground text-center">
+                                <span className="text-2xl sm:text-4xl lg:text-5xl">Act at the</span>
+                                <br className="sm:hidden" />
                                 <span
-                                    className="bg-gradient-to-r from-emerald-400 via-green-400 to-emerald-500 bg-clip-text text-transparent px-2 pb-2"
-                                    style={{ fontFamily: "var(--font-great-vibes), cursive" }}
+                                    className="bg-gradient-to-r from-emerald-400 via-green-400 to-emerald-500 bg-clip-text text-transparent inline-block text-2xl sm:text-4xl lg:text-5xl pt-1 pb-2 sm:pt-2 sm:pb-4 sm:pr-8 ml-2 sm:ml-4"
+                                    style={{ fontFamily: "var(--font-momo-signature), cursive" }}
                                 >
                                     Right Moment
                                 </span>
                             </h1>
                         </motion.div>
 
-                        {/* Description - max 2 rows */}
+                        {/* Sub Heading - max 2 rows */}
                         <motion.p
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
-                            className="mx-auto mb-6 max-w-2xl text-xl text-muted-foreground leading-relaxed"
+                            className="mx-auto mb-8 sm:mb-12 max-w-3xl text-base sm:text-xl text-muted-foreground leading-relaxed px-4 sm:px-0"
                         >
-                            Kairos is an AI-powered life management platform that brings your finances, habits, and mental well-being into one intelligent system.
-                        </motion.p>
-
-                        {/* Supporting Line */}
-                        <motion.p
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.25 }}
-                            className="mx-auto mb-12 max-w-xl text-lg text-muted-foreground/80"
-                        >
-                            Track what matters, understand your patterns, and make better daily decisions.
+                            Kairos is an AI-powered life management platform that brings your finances, habits, and well-being into one system to help you make better daily decisions.
                         </motion.p>
 
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.3 }}
-                            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+                            className="flex flex-row items-center justify-center gap-3 sm:gap-4"
                         >
                             {/* Primary CTA */}
                             <Link href="/signup">
                                 <div
-                                    className="group cursor-pointer border border-emerald-500/30 bg-gradient-to-r from-emerald-500 to-green-600 gap-2 h-[56px] flex items-center px-6 rounded-full shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all duration-300 hover:-translate-y-1"
+                                    className="group cursor-pointer border border-emerald-500/30 bg-gradient-to-r from-emerald-500 to-green-600 gap-1.5 sm:gap-2 h-10 sm:h-[56px] flex items-center px-4 sm:px-6 rounded-full shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all duration-300 hover:-translate-y-1"
                                     onMouseEnter={() => setIsLaunchHovered(true)}
                                     onMouseLeave={() => setIsLaunchHovered(false)}
                                 >
-                                    <p className="font-semibold tracking-tight text-white flex items-center gap-2 justify-center text-base">
-                                        Get Started
+                                    <p className="font-semibold tracking-tight text-white flex items-center gap-1.5 sm:gap-2 justify-center text-sm sm:text-base">
+                                        Launch App
                                     </p>
                                     <div className="relative w-5 h-5 overflow-hidden">
                                         <motion.div
@@ -127,11 +109,11 @@ export default function Hero() {
                             {/* Secondary CTA */}
                             <Link href="#features">
                                 <div
-                                    className="group cursor-pointer border border-border bg-secondary/50 backdrop-blur-sm gap-2 h-[56px] flex items-center px-6 rounded-full hover:bg-secondary/80 transition-all duration-300"
+                                    className="group cursor-pointer border border-border bg-secondary/50 backdrop-blur-sm gap-1.5 sm:gap-2 h-10 sm:h-[56px] flex items-center px-4 sm:px-6 rounded-full hover:bg-secondary/80 transition-all duration-300"
                                     onMouseEnter={() => setIsHowHovered(true)}
                                     onMouseLeave={() => setIsHowHovered(false)}
                                 >
-                                    <p className="font-medium tracking-tight text-foreground flex items-center gap-2 justify-center text-base">
+                                    <p className="font-medium tracking-tight text-foreground flex items-center gap-1.5 sm:gap-2 justify-center text-sm sm:text-base">
                                         See How It Works
                                     </p>
                                     <div className="relative w-5 h-5 overflow-hidden">
@@ -164,15 +146,70 @@ export default function Hero() {
                             </Link>
                         </motion.div>
 
-                        {/* Decorative Elements */}
+                        {/* SDG Marquee */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.8, delay: 0.5 }}
-                            className="mt-16 flex items-center justify-center gap-2 text-muted-foreground"
+                            className="mt-10 sm:mt-16 flex flex-col items-center justify-center gap-3 sm:gap-4 w-full max-w-xl mx-auto px-4 overflow-hidden"
                         >
-                            <span className="text-sm">Aligned with</span>
-                            <span className="text-sm font-medium text-emerald-400">SDG 3: Good Health and Well-Being</span>
+                            <span className="text-[8px] sm:text-[10px] font-bold tracking-[0.1em] sm:tracking-[0.2em] text-muted-foreground/60 uppercase text-center whitespace-nowrap">
+                                Aligned with SDGs
+                            </span>
+
+                            <div className="w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
+                                <div className="flex gap-6 sm:gap-8 whitespace-nowrap py-4 w-max animate-marquee [&:has(img:hover)]:[animation-play-state:paused] will-change-transform">
+                                    <TooltipProvider delayDuration={200} skipDelayDuration={100}>
+                                        {[...Array(4)].map((_, i) => (
+                                            <div key={i} className="flex gap-6 sm:gap-8 items-center shrink-0">
+                                                {[
+                                                    {
+                                                        id: "sdg3",
+                                                        title: "Good Health & Well-being",
+                                                        desc: "Promotes mental wellness through AI-driven habit tracking."
+                                                    },
+                                                    {
+                                                        id: "sdg4",
+                                                        title: "Quality Education",
+                                                        desc: "Empowers personal growth with intelligent insights."
+                                                    },
+                                                    {
+                                                        id: "sdg8",
+                                                        title: "Decent Work & Growth",
+                                                        desc: "Enhances productivity and professional stability."
+                                                    },
+                                                    {
+                                                        id: "sdg12",
+                                                        title: "Responsible Consumption",
+                                                        desc: "Encourages mindful and sustainable lifestyle choices."
+                                                    }
+                                                ].map((sdg) => (
+                                                    <Tooltip key={`${sdg.id}-${i}`}>
+                                                        <TooltipTrigger asChild>
+                                                            <div className="relative group/icon cursor-pointer p-1">
+                                                                <img
+                                                                    src={`/SDGs/${sdg.id}.svg`}
+                                                                    alt={sdg.title}
+                                                                    className="h-7 w-auto transition-transform duration-300 group-hover/icon:scale-110"
+                                                                />
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent
+                                                            sideOffset={10}
+                                                            className="bg-white/95 backdrop-blur-sm border-zinc-200 text-zinc-900 p-3 max-w-[220px] rounded-xl shadow-xl shadow-black/5"
+                                                        >
+                                                            <div className="flex flex-col gap-1">
+                                                                <p className="text-xs font-bold text-emerald-600">{sdg.title}</p>
+                                                                <p className="text-[10px] text-zinc-600 leading-snug">{sdg.desc}</p>
+                                                            </div>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                ))}
+                                            </div>
+                                        ))}
+                                    </TooltipProvider>
+                                </div>
+                            </div>
                         </motion.div>
                     </div>
                 </div>
