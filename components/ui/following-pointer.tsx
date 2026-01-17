@@ -16,31 +16,44 @@ export const FollowerPointerCard = ({
     const x = useMotionValue(0)
     const y = useMotionValue(0)
     const ref = React.useRef<HTMLDivElement>(null)
-    const [rect, setRect] = useState<DOMRect | null>(null)
+    const [isMobile, setIsMobile] = useState<boolean>(false)
     const [isInside, setIsInside] = useState<boolean>(false)
 
     useEffect(() => {
-        const updateRect = () => {
-            if (ref.current) {
-                setRect(ref.current.getBoundingClientRect())
-            }
+        // Check for mobile/touch devices
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 1024 || window.matchMedia("(pointer: coarse)").matches)
         }
 
-        updateRect()
+        checkMobile()
+        window.addEventListener("resize", checkMobile)
 
-        const handleResize = () => updateRect()
-        const handleScroll = () => updateRect()
-
-        window.addEventListener("resize", handleResize)
-        window.addEventListener("scroll", handleScroll)
+        // Reset inside state if window loses focus to prevent ghosting
+        const handleWindowBlur = () => setIsInside(false)
+        window.addEventListener("blur", handleWindowBlur)
 
         return () => {
-            window.removeEventListener("resize", handleResize)
-            window.removeEventListener("scroll", handleScroll)
+            window.removeEventListener("resize", checkMobile)
+            window.removeEventListener("blur", handleWindowBlur)
         }
     }, [])
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (isMobile) return
+
+        const target = e.target as HTMLElement
+        const shouldHide =
+            target.tagName === "TEXTAREA" ||
+            target.tagName === "INPUT" ||
+            target.tagName === "BUTTON" ||
+            target.closest("[data-no-pointer]")
+
+        if (shouldHide) {
+            setIsInside(false)
+            return
+        }
+
+        if (!isInside) setIsInside(true)
         x.set(e.clientX)
         y.set(e.clientY)
     }
@@ -49,8 +62,19 @@ export const FollowerPointerCard = ({
         setIsInside(false)
     }
 
-    const handleMouseEnter = () => {
-        setIsInside(true)
+    const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (isMobile) return
+
+        const target = e.target as HTMLElement
+        const shouldHide =
+            target.tagName === "TEXTAREA" ||
+            target.tagName === "INPUT" ||
+            target.tagName === "BUTTON" ||
+            target.closest("[data-no-pointer]")
+
+        if (!shouldHide) {
+            setIsInside(true)
+        }
     }
 
     return (
@@ -59,12 +83,14 @@ export const FollowerPointerCard = ({
             onMouseEnter={handleMouseEnter}
             onMouseMove={handleMouseMove}
             style={{
-                cursor: "none",
+                cursor: !isMobile && isInside ? "none" : "auto",
             }}
             ref={ref}
             className={cn("relative", className)}
         >
-            <AnimatePresence>{isInside && <FollowPointer x={x} y={y} title={title} />}</AnimatePresence>
+            <AnimatePresence>
+                {!isMobile && isInside && <FollowPointer x={x} y={y} title={title} />}
+            </AnimatePresence>
             {children}
         </div>
     )
