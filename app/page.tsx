@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import { Menu, X } from "lucide-react"
+import { Menu, X, ArrowUpRight } from "lucide-react"
 import Link from "next/link"
 import Hero from "@/components/landing/hero"
 import Features from "@/components/landing/features"
@@ -101,17 +101,18 @@ export default function Home() {
 
         <div className="flex items-center gap-4 z-50">
           <Link
-            href="/onboarding"
+            href="/onboarding?mode=signup"
             className="font-medium transition-colors hover:text-emerald-400 text-muted-foreground text-sm cursor-pointer"
           >
-            Log In
+            Sign Up
           </Link>
 
           <Link
-            href="/onboarding?mode=signup"
-            className="rounded-full font-bold relative cursor-pointer hover:-translate-y-0.5 transition duration-200 inline-block text-center bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-500/20 px-5 py-2.5 text-sm"
+            href="/onboarding"
+            className="rounded-full font-bold relative cursor-pointer transition duration-200 inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-500/20 px-5 py-2.5 text-sm hover:brightness-110 active:scale-95"
           >
-            Sign Up
+            Log In
+            <ArrowUpRight className="w-4 h-4" />
           </Link>
         </div>
       </header>
@@ -166,16 +167,17 @@ export default function Home() {
               </button>
               <div className="border-t border-emerald-500/20 pt-4 mt-4 flex flex-col space-y-3">
                 <Link
-                  href="/onboarding"
+                  href="/onboarding?mode=signup"
                   className="px-4 py-3 text-lg font-medium text-muted-foreground hover:text-emerald-400 transition-colors rounded-lg hover:bg-emerald-500/10 cursor-pointer"
                 >
-                  Log In
+                  Sign Up
                 </Link>
                 <Link
-                  href="/onboarding?mode=signup"
-                  className="px-4 py-3 text-lg font-bold text-center bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-lg shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                  href="/onboarding"
+                  className="px-4 py-3 text-lg font-bold flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-lg shadow-lg transition-all duration-200 cursor-pointer hover:brightness-110"
                 >
-                  Sign Up
+                  Log In
+                  <ArrowUpRight className="w-5 h-5" />
                 </Link>
               </div>
             </nav>
