@@ -13,7 +13,7 @@ import { Brain, LayoutDashboard, Wallet, TrendingUp, Heart, Target, PiggyBank, L
 
 export default function Features() {
     const ref = useRef(null)
-    const isInView = useInView(ref, { once: true, amount: 0.3 })
+    const isInView = useInView(ref, { once: true, amount: 0.1 })
     const [isHovering, setIsHovering] = useState(false)
     const [isCliHovering, setIsCliHovering] = useState(false)
     const [isFeature3Hovering, setIsFeature3Hovering] = useState(false)
@@ -41,7 +41,7 @@ export default function Features() {
                 initial={{ opacity: 0, y: 50 }}
                 animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
                 transition={{ duration: 0.5, delay: 0 }}
-                className="container mx-auto flex flex-col items-center gap-6 sm:gap-12"
+                className="container mx-auto px-4 sm:px-6 flex flex-col items-center gap-6 sm:gap-12"
             >
                 <h2
                     className={cn(
@@ -49,7 +49,7 @@ export default function Features() {
                         geist.className,
                     )}
                 >
-                    Everything you need to <span className="bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">thrive</span>
+                    Everything you need to <span className="bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent inline-block pt-2 pb-2 pr-10 -mr-10 ml-2" style={{ fontFamily: "var(--font-momo-signature), cursive" }}>thrive</span>
                 </h2>
                 <FollowerPointerCard
                     title={
@@ -58,22 +58,21 @@ export default function Features() {
                         </div>
                     }
                 >
-                    <div className="cursor-none">
-                        <div className="grid grid-cols-12 gap-4 justify-center">
+                    <div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-7xl mx-auto">
                             {/* Context-Aware AI Assistant */}
                             <motion.div
-                                className="group border-emerald-500/20 text-card-foreground relative col-span-12 flex flex-col overflow-hidden rounded-xl border-2 p-6 shadow-xl transition-all ease-in-out md:col-span-6 xl:col-span-6 xl:col-start-2"
+                                className="group border-emerald-500/20 text-card-foreground relative flex flex-col overflow-hidden rounded-xl border-2 p-6 shadow-xl transition-all ease-in-out"
                                 onMouseEnter={() => setIsCliHovering(true)}
                                 onMouseLeave={() => setIsCliHovering(false)}
                                 initial={{ opacity: 0, y: 50 }}
                                 animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-                                transition={{ duration: 0.5, delay: 0.5 }}
+                                transition={{ duration: 0.3, delay: 0.1 }}
                                 whileHover={{
-                                    scale: 1.02,
-                                    borderColor: "rgba(16, 185, 129, 0.6)",
-                                    boxShadow: "0 0 30px rgba(16, 185, 129, 0.2)",
+                                    scale: 1.01,
+                                    borderColor: "rgba(16, 185, 129, 0.5)",
+                                    boxShadow: "0 10px 30px -10px rgba(16, 185, 129, 0.2)",
                                 }}
-                                style={{ transition: "all 0s ease-in-out" }}
                             >
                                 <div className="flex flex-col gap-4">
                                     <div className="flex items-center gap-3">
@@ -93,46 +92,92 @@ export default function Features() {
                                         className="relative w-full h-[400px] rounded-xl overflow-hidden"
                                         style={{ borderRadius: "20px" }}
                                     >
-                                        {/* Background gradient */}
-                                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/30 to-black/50 rounded-xl"></div>
-
-                                        {/* Animated SVG Connecting Lines */}
+                                        {/* Animated Connecting Edges */}
                                         <motion.div
-                                            className="absolute inset-0 flex items-center justify-center"
+                                            className="absolute inset-0 flex items-center justify-center pointer-events-none"
                                             initial={{ opacity: 0 }}
                                             animate={isCliHovering ? { opacity: 1 } : { opacity: 0 }}
-                                            transition={{ duration: 0.5 }}
+                                            transition={{ duration: 0.2 }}
+
                                         >
-                                            <svg width="100%" height="100%" viewBox="0 0 121 94" className="absolute">
+                                            <svg width="100%" height="100%" viewBox="0 0 600 400" className="absolute hidden md:block">
+                                                {/* Left side connections (Chipset Style) */}
                                                 <motion.path
-                                                    d="M 60.688 1.59 L 60.688 92.449 M 60.688 92.449 L 119.368 92.449 M 60.688 92.449 L 1.414 92.449"
-                                                    stroke="rgba(16, 185, 129, 0.5)"
-                                                    fill="transparent"
-                                                    strokeDasharray="2 2"
+                                                    d="M 268 185 H 238 V 145 H 170"
+                                                    stroke="rgba(16, 185, 129, 0.7)"
+                                                    strokeWidth="1.5"
+                                                    fill="none"
                                                     initial={{ pathLength: 0 }}
                                                     animate={isCliHovering ? { pathLength: 1 } : { pathLength: 0 }}
-                                                    transition={{
-                                                        duration: 2,
-                                                        ease: "easeInOut",
-                                                    }}
+                                                    transition={{ duration: 0.4, ease: "easeOut" }}
                                                 />
-                                            </svg>
-                                            <svg width="100%" height="100%" viewBox="0 0 121 94" className="absolute">
                                                 <motion.path
-                                                    d="M 60.688 92.449 L 60.688 1.59 M 60.688 1.59 L 119.368 1.59 M 60.688 1.59 L 1.414 1.59"
-                                                    stroke="rgba(16, 185, 129, 0.5)"
-                                                    fill="transparent"
-                                                    strokeDasharray="2 2"
+                                                    d="M 268 200 H 170"
+                                                    stroke="rgba(16, 185, 129, 0.7)"
+                                                    strokeWidth="1.5"
+                                                    fill="none"
                                                     initial={{ pathLength: 0 }}
                                                     animate={isCliHovering ? { pathLength: 1 } : { pathLength: 0 }}
-                                                    transition={{
-                                                        duration: 2,
-                                                        delay: 0.5,
-                                                        ease: "easeInOut",
-                                                    }}
+                                                    transition={{ duration: 0.3, ease: "easeOut", delay: 0.05 }}
                                                 />
+                                                <motion.path
+                                                    d="M 268 215 H 238 V 255 H 170"
+                                                    stroke="rgba(16, 185, 129, 0.7)"
+                                                    strokeWidth="1.5"
+                                                    fill="none"
+                                                    initial={{ pathLength: 0 }}
+                                                    animate={isCliHovering ? { pathLength: 1 } : { pathLength: 0 }}
+                                                    transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
+                                                />
+
+                                                {/* Right side connections (Chipset Style) */}
+                                                <motion.path
+                                                    d="M 332 185 H 362 V 145 H 430"
+                                                    stroke="rgba(16, 185, 129, 0.7)"
+                                                    strokeWidth="1.5"
+                                                    fill="none"
+                                                    initial={{ pathLength: 0 }}
+                                                    animate={isCliHovering ? { pathLength: 1 } : { pathLength: 0 }}
+                                                    transition={{ duration: 0.4, ease: "easeOut" }}
+                                                />
+                                                <motion.path
+                                                    d="M 332 200 H 430"
+                                                    stroke="rgba(16, 185, 129, 0.7)"
+                                                    strokeWidth="1.5"
+                                                    fill="none"
+                                                    initial={{ pathLength: 0 }}
+                                                    animate={isCliHovering ? { pathLength: 1 } : { pathLength: 0 }}
+                                                    transition={{ duration: 0.3, ease: "easeOut", delay: 0.05 }}
+                                                />
+                                                <motion.path
+                                                    d="M 332 215 H 362 V 255 H 430"
+                                                    stroke="rgba(16, 185, 129, 0.7)"
+                                                    strokeWidth="1.5"
+                                                    fill="none"
+                                                    initial={{ pathLength: 0 }}
+                                                    animate={isCliHovering ? { pathLength: 1 } : { pathLength: 0 }}
+                                                    transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
+                                                />
+
+                                                {/* Optional connection dots at ends */}
+                                                {[
+                                                    { x: 170, y: 145 }, { x: 170, y: 200 }, { x: 170, y: 255 },
+                                                    { x: 430, y: 145 }, { x: 430, y: 200 }, { x: 430, y: 255 }
+                                                ].map((dot, i) => (
+                                                    <motion.circle
+                                                        key={i}
+                                                        cx={dot.x}
+                                                        cy={dot.y}
+                                                        r="2"
+                                                        fill="rgba(16, 185, 129, 0.8)"
+                                                        initial={{ opacity: 0, scale: 0 }}
+                                                        animate={isCliHovering ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
+                                                        transition={{ duration: 0.15, delay: 0.3 + (i % 3) * 0.05 }}
+                                                    />
+                                                ))}
                                             </svg>
                                         </motion.div>
+
 
                                         {/* Animated Green Blur Effect */}
                                         <motion.div
@@ -147,11 +192,10 @@ export default function Features() {
                                             }}
                                         />
 
-                                        {/* Main Content Container with Staggered Animations */}
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="flex items-center gap-8">
+                                        <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-8">
+                                            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 sm:gap-12 w-full max-w-2xl px-2 sm:px-4 leading-tight">
                                                 {/* Left Column - Finance Features */}
-                                                <div className="flex flex-col gap-3">
+                                                <div className="flex flex-col gap-2 sm:gap-3 items-end">
                                                     {[
                                                         { icon: Wallet, label: "Expenses" },
                                                         { icon: PiggyBank, label: "Budgets" },
@@ -159,7 +203,7 @@ export default function Features() {
                                                     ].map((item, index) => (
                                                         <motion.div
                                                             key={`left-${index}`}
-                                                            className="bg-white rounded px-3 py-2 flex items-center gap-2 text-black text-sm font-medium shadow-sm"
+                                                            className="bg-white rounded px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-1.5 sm:gap-2 text-black text-[10px] sm:text-sm font-medium shadow-sm w-fit whitespace-nowrap"
                                                             initial={{ opacity: 1, x: 0 }}
                                                             animate={isCliHovering ? { x: [-20, 0] } : { x: 0 }}
                                                             transition={{
@@ -168,29 +212,31 @@ export default function Features() {
                                                             }}
                                                             whileHover={{ scale: 1.05 }}
                                                         >
-                                                            <item.icon className="h-4 w-4 text-emerald-600" />
+                                                            <item.icon className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-600" />
                                                             {item.label}
                                                         </motion.div>
                                                     ))}
                                                 </div>
 
                                                 {/* Center Logo */}
-                                                <motion.div
-                                                    className="w-16 h-16 border border-emerald-500/30 rounded-lg overflow-hidden shadow-lg bg-[#0B0B0B] flex items-center justify-center"
-                                                    initial={{ opacity: 1, scale: 1 }}
-                                                    animate={isCliHovering ? { scale: [1, 1.1, 1] } : { scale: 1 }}
-                                                    transition={{ duration: 0.6, ease: "easeOut" }}
-                                                    whileHover={{ scale: 1.1, rotate: 5 }}
-                                                >
-                                                    <img
-                                                        src="/kairos-logo.svg"
-                                                        alt="Kairos"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                </motion.div>
+                                                <div className="flex justify-center">
+                                                    <motion.div
+                                                        className="w-10 h-10 sm:w-16 sm:h-16 border border-emerald-500/30 rounded-lg overflow-hidden shadow-lg bg-[#0B0B0B] flex items-center justify-center flex-shrink-0"
+                                                        initial={{ opacity: 1, scale: 1 }}
+                                                        animate={isCliHovering ? { scale: [1, 1.1, 1] } : { scale: 1 }}
+                                                        transition={{ duration: 0.6, ease: "easeOut" }}
+                                                        whileHover={{ scale: 1.1, rotate: 5 }}
+                                                    >
+                                                        <img
+                                                            src="/kairos-logo.svg"
+                                                            alt="Kairos"
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </motion.div>
+                                                </div>
 
                                                 {/* Right Column - Life Features */}
-                                                <div className="flex flex-col gap-3">
+                                                <div className="flex flex-col gap-2 sm:gap-3 items-start">
                                                     {[
                                                         { icon: RotateCcw, label: "Habits" },
                                                         { icon: Smile, label: "Mood" },
@@ -198,7 +244,7 @@ export default function Features() {
                                                     ].map((item, index) => (
                                                         <motion.div
                                                             key={`right-${index}`}
-                                                            className="bg-white rounded px-3 py-2 flex items-center gap-2 text-black text-sm font-medium shadow-sm"
+                                                            className="bg-white rounded px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-1.5 sm:gap-2 text-black text-[10px] sm:text-sm font-medium shadow-sm w-fit whitespace-nowrap"
                                                             initial={{ opacity: 1, x: 0 }}
                                                             animate={isCliHovering ? { x: [20, 0] } : { x: 0 }}
                                                             transition={{
@@ -207,7 +253,7 @@ export default function Features() {
                                                             }}
                                                             whileHover={{ scale: 1.05 }}
                                                         >
-                                                            <item.icon className="h-4 w-4 text-emerald-600" />
+                                                            <item.icon className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-600" />
                                                             {item.label}
                                                         </motion.div>
                                                     ))}
@@ -222,7 +268,7 @@ export default function Features() {
                                             animate={isCliHovering ? { opacity: 1 } : { opacity: 0 }}
                                             transition={{ duration: 0.5 }}
                                         >
-                                            <svg width="350" height="350" viewBox="0 0 350 350" className="opacity-40">
+                                            <svg width="350" height="350" viewBox="0 0 350 350" className="opacity-40 hidden md:block">
                                                 <motion.path
                                                     d="M 175 1.159 C 271.01 1.159 348.841 78.99 348.841 175 C 348.841 271.01 271.01 348.841 175 348.841 C 78.99 348.841 1.159 271.01 1.159 175 C 1.159 78.99 78.99 1.159 175 1.159 Z"
                                                     stroke="rgba(16, 185, 129, 0.38)"
@@ -248,18 +294,17 @@ export default function Features() {
 
                             {/* Unified Life Dashboard */}
                             <motion.div
-                                className="group border-emerald-500/20 text-card-foreground relative col-span-12 flex flex-col overflow-hidden rounded-xl border-2 p-6 shadow-xl transition-all ease-in-out md:col-span-6 xl:col-span-6 xl:col-start-8"
+                                className="group border-emerald-500/20 text-card-foreground relative flex flex-col overflow-hidden rounded-xl border-2 p-6 shadow-xl transition-all ease-in-out"
                                 onMouseEnter={() => setIsHovering(true)}
                                 onMouseLeave={() => setIsHovering(false)}
                                 initial={{ opacity: 0, y: 50 }}
                                 animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-                                transition={{ duration: 0.5, delay: 0.5 }}
+                                transition={{ duration: 0.3, delay: 0.1 }}
                                 whileHover={{
-                                    scale: 1.02,
-                                    borderColor: "rgba(16, 185, 129, 0.6)",
-                                    boxShadow: "0 0 30px rgba(16, 185, 129, 0.2)",
+                                    scale: 1.01,
+                                    borderColor: "rgba(16, 185, 129, 0.5)",
+                                    boxShadow: "0 10px 30px -10px rgba(16, 185, 129, 0.2)",
                                 }}
-                                style={{ transition: "all 0s ease-in-out" }}
                             >
                                 <div className="flex flex-col gap-4">
                                     <div className="flex items-center gap-3">
@@ -309,18 +354,17 @@ export default function Features() {
 
                             {/* Smart Finance Tracking */}
                             <motion.div
-                                className="group border-emerald-500/20 text-card-foreground relative col-span-12 flex flex-col overflow-hidden rounded-xl border-2 p-6 shadow-xl transition-all ease-in-out md:col-span-6 xl:col-span-6 xl:col-start-2"
+                                className="group border-emerald-500/20 text-card-foreground relative flex flex-col overflow-hidden rounded-xl border-2 p-6 shadow-xl transition-all ease-in-out"
                                 onMouseEnter={() => setIsFeature3Hovering(true)}
                                 onMouseLeave={() => setIsFeature3Hovering(false)}
                                 initial={{ opacity: 0, y: 50 }}
                                 animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-                                transition={{ duration: 0.5, delay: 1.0 }}
+                                transition={{ duration: 0.3, delay: 0.1 }}
                                 whileHover={{
-                                    scale: 1.02,
+                                    scale: 1.01,
                                     borderColor: "rgba(16, 185, 129, 0.5)",
-                                    boxShadow: "0 0 30px rgba(16, 185, 129, 0.2)",
+                                    boxShadow: "0 10px 30px -10px rgba(16, 185, 129, 0.2)",
                                 }}
-                                style={{ transition: "all 0s ease-in-out" }}
                             >
                                 <div className="flex flex-col gap-4">
                                     <div className="flex items-center gap-3">
@@ -409,17 +453,16 @@ export default function Features() {
 
                             {/* Habit & Mood Tracking */}
                             <motion.div
-                                className="group border-emerald-500/20 text-card-foreground relative col-span-12 flex flex-col overflow-hidden rounded-xl border-2 p-6 shadow-xl transition-all ease-in-out md:col-span-6 xl:col-span-6 xl:col-start-8"
+                                className="group border-emerald-500/20 text-card-foreground relative flex flex-col overflow-hidden rounded-xl border-2 p-6 shadow-xl transition-all ease-in-out"
                                 onMouseEnter={() => setIsFeature4Hovering(true)}
                                 onMouseLeave={() => setIsFeature4Hovering(false)}
                                 initial={{ opacity: 0, y: 50 }}
                                 animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-                                transition={{ duration: 0.5, delay: 1.0 }}
+                                transition={{ duration: 0.3, delay: 0.1 }}
                                 whileHover={{
-                                    rotateY: 5,
-                                    rotateX: 2,
-                                    boxShadow: "0 20px 40px rgba(16, 185, 129, 0.3)",
-                                    borderColor: "rgba(16, 185, 129, 0.6)",
+                                    scale: 1.01,
+                                    borderColor: "rgba(16, 185, 129, 0.5)",
+                                    boxShadow: "0 10px 30px -10px rgba(16, 185, 129, 0.2)",
                                 }}
                                 style={{ transition: "all 0s ease-in-out" }}
                             >
