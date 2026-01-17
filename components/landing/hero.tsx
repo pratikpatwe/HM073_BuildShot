@@ -68,7 +68,7 @@ export default function Hero() {
                             className="flex flex-row items-center justify-center gap-3 sm:gap-4"
                         >
                             {/* Primary CTA */}
-                            <Link href="/signup">
+                            <Link href="/onboarding?mode=signup">
                                 <div
                                     className="group cursor-pointer border border-emerald-500/30 bg-gradient-to-r from-emerald-500 to-green-600 gap-1.5 sm:gap-2 h-10 sm:h-[56px] flex items-center px-4 sm:px-6 rounded-full shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all duration-300 hover:-translate-y-1"
                                     onMouseEnter={() => setIsLaunchHovered(true)}
