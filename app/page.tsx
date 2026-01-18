@@ -9,10 +9,13 @@ import WhyKairos from "@/components/landing/why-kairos"
 import Testimonials from "@/components/landing/testimonials"
 import { FAQSection } from "@/components/landing/faq-section"
 import { Footer } from "@/components/landing/footer"
+import { createClient } from "@/lib/supabase/client"
 
 export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const supabase = createClient()
 
   useEffect(() => {
     const root = window.document.documentElement
@@ -28,6 +31,14 @@ export default function Home() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+    }
+    getUser()
+  }, [supabase.auth])
 
   const handleNavClick = (elementId: string) => {
     setIsMobileMenuOpen(false)
@@ -100,20 +111,32 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-4 z-50">
-          <Link
-            href="/onboarding?mode=signup"
-            className="font-medium transition-colors hover:text-emerald-400 text-muted-foreground text-sm cursor-pointer"
-          >
-            Sign Up
-          </Link>
+          {user ? (
+            <Link
+              href="/dashboard"
+              className="rounded-full font-bold relative cursor-pointer transition duration-200 inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-500/20 px-6 py-2.5 text-sm hover:brightness-110 active:scale-95 group"
+            >
+              Launch App
+              <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/onboarding?mode=signup"
+                className="font-medium transition-colors hover:text-emerald-400 text-muted-foreground text-sm cursor-pointer"
+              >
+                Sign Up
+              </Link>
 
-          <Link
-            href="/onboarding"
-            className="rounded-full font-bold relative cursor-pointer transition duration-200 inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-500/20 px-5 py-2.5 text-sm hover:brightness-110 active:scale-95"
-          >
-            Log In
-            <ArrowUpRight className="w-4 h-4" />
-          </Link>
+              <Link
+                href="/onboarding"
+                className="rounded-full font-bold relative cursor-pointer transition duration-200 inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-500/20 px-5 py-2.5 text-sm hover:brightness-110 active:scale-95"
+              >
+                Log In
+                <ArrowUpRight className="w-4 h-4" />
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
@@ -166,19 +189,31 @@ export default function Home() {
                 FAQ
               </button>
               <div className="border-t border-emerald-500/20 pt-4 mt-4 flex flex-col space-y-3">
-                <Link
-                  href="/onboarding?mode=signup"
-                  className="px-4 py-3 text-lg font-medium text-muted-foreground hover:text-emerald-400 transition-colors rounded-lg hover:bg-emerald-500/10 cursor-pointer"
-                >
-                  Sign Up
-                </Link>
-                <Link
-                  href="/onboarding"
-                  className="px-4 py-3 text-lg font-bold flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-lg shadow-lg transition-all duration-200 cursor-pointer hover:brightness-110"
-                >
-                  Log In
-                  <ArrowUpRight className="w-5 h-5" />
-                </Link>
+                {user ? (
+                  <Link
+                    href="/dashboard"
+                    className="w-full py-4 text-lg font-bold flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-full shadow-lg transition-all duration-200 cursor-pointer hover:brightness-110"
+                  >
+                    Launch App
+                    <ArrowUpRight className="w-5 h-5" />
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      href="/onboarding?mode=signup"
+                      className="px-4 py-3 text-lg font-medium text-muted-foreground hover:text-emerald-400 transition-colors rounded-lg hover:bg-emerald-500/10 cursor-pointer"
+                    >
+                      Sign Up
+                    </Link>
+                    <Link
+                      href="/onboarding"
+                      className="px-4 py-3 text-lg font-bold flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-lg shadow-lg transition-all duration-200 cursor-pointer hover:brightness-110"
+                    >
+                      Log In
+                      <ArrowUpRight className="w-5 h-5" />
+                    </Link>
+                  </>
+                )}
               </div>
             </nav>
           </div>
