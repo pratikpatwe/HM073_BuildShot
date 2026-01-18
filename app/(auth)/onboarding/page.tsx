@@ -7,6 +7,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { toast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
 import { AuthCard } from "@/components/auth/auth-card"
+import { createClient } from "@/lib/supabase/client"
 
 function OnboardingContent() {
     const searchParams = useSearchParams()
@@ -70,13 +71,30 @@ function OnboardingContent() {
 
         setIsLoading(true)
 
-        // Simulate authentication
-        setTimeout(() => {
-            setIsLoading(false)
-            toast.success("Signed in successfully!", {
-                description: "Welcome back to your account.",
+        try {
+            const supabase = createClient()
+            const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
             })
-        }, 1500)
+
+            if (error) {
+                toast.error("Sign in failed", {
+                    description: error.message,
+                })
+            } else {
+                toast.success("Signed in successfully!", {
+                    description: "Welcome back to your account.",
+                })
+                router.push('/dashboard')
+            }
+        } catch (error: any) {
+            toast.error("An unexpected error occurred", {
+                description: "Please try again later.",
+            })
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     const handleSignUp = async (e: React.FormEvent) => {
@@ -126,25 +144,91 @@ function OnboardingContent() {
 
         setIsLoading(true)
 
-        // Simulate registration
-        setTimeout(() => {
-            setIsLoading(false)
-            toast.success("Account created!", {
-                description: "Your account has been created successfully.",
+        try {
+            const supabase = createClient()
+            const { error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        first_name: firstName,
+                        last_name: lastName,
+                        full_name: `${firstName} ${lastName}`,
+                    },
+                },
             })
-        }, 1500)
+
+            if (error) {
+                toast.error("Sign up failed", {
+                    description: error.message,
+                })
+            } else {
+                toast.success("Account created!", {
+                    description: "Please check your email to confirm your account.",
+                })
+            }
+        } catch (error: any) {
+            toast.error("An unexpected error occurred", {
+                description: "Please try again later.",
+            })
+        } finally {
+            setIsLoading(false)
+        }
     }
 
-    const handleSocialLogin = (provider: string) => {
-        toast.info(`${provider} login`, {
-            description: `Redirecting to ${provider}...`,
-        })
+    const handleSocialLogin = async (provider: string) => {
+        setIsLoading(true)
+        try {
+            const supabase = createClient()
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: provider.toLowerCase() as any,
+                options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                },
+            })
+
+            if (error) {
+                toast.error(`${provider} login failed`, {
+                    description: error.message,
+                })
+                setIsLoading(false)
+            }
+        } catch (error: any) {
+            toast.error("An unexpected error occurred", {
+                description: "Please try again later.",
+            })
+            setIsLoading(false)
+        }
     }
 
-    const handleForgotPassword = () => {
-        toast.success("Reset link sent", {
-            description: "Check your email for password reset instructions.",
-        })
+    const handleForgotPassword = async () => {
+        if (!email) {
+            toast.error("Email is required", {
+                description: "Please enter your email address to reset your password.",
+            })
+            return
+        }
+
+        try {
+            const supabase = createClient()
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${window.location.origin}/auth/callback?next=/dashboard/settings`,
+            })
+
+            if (error) {
+                toast.error("Reset failed", {
+                    description: error.message,
+                })
+            } else {
+                toast.success("Reset link sent", {
+                    description: "Check your email for password reset instructions.",
+                })
+            }
+        } catch (error: any) {
+            toast.error("An unexpected error occurred", {
+                description: "Please try again later.",
+            })
+        }
     }
 
     return (
