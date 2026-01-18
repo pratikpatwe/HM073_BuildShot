@@ -20,12 +20,12 @@ KAIROS is a web-based platform designed to enhance personal well-being by offeri
 
 ## **🌟 Features**  
 
-✔ **Unified Productivity Dashboard** - Combined overview of habits, finances, and daily performance metrics.
-✔ **Smart Finance Management** - Category-based income/expense tracking with visual budget progress bars.
-✔ **Flexible Habit Tracking** - Support for complex schedules, streak tracking, and consistency heatmaps.
-✔ **Optimistic UI Updates** - Lightning-fast interactions for checking habits and updating data without lag.
-✔ **AI Insights** - Leveraging Google Gemini to provide personalized feedback on lifestyle and spending.
-✔ **Responsive Design** - Fully optimized for a premium experience on mobile, tablet, and desktop.
+- **✔ Unified Productivity Dashboard** - Combined overview of habits, finances, and daily performance metrics.
+- **✔ Smart Finance Management** - Category-based income/expense tracking with visual budget progress bars.
+- **✔ Flexible Habit Tracking** - Support for complex schedules, streak tracking, and consistency heatmaps.
+- **✔ Optimistic UI Updates** - Lightning-fast interactions for checking habits and updating data without lag.
+- **✔ AI Insights** - Leveraging Google Gemini to provide personalized feedback on lifestyle and spending.
+- **✔ Responsive Design** - Fully optimized for a premium experience on mobile, tablet, and desktop.
 
 ---
 
@@ -68,7 +68,7 @@ Here are some screenshots showcasing the KAIROS platform:
 
 ---
 **System Architecture**
-![Problem Statement Diagram](https://github.com/pratikpatwe/HM073_BuildShot/blob/main/public/architecture.png)
+![Problem Statement Diagram](https://github.com/pratikpatwe/HM073_BuildShot/blob/main/public/architecture.jpeg)
 
 ---
 
