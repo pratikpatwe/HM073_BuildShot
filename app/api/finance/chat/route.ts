@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { getUserFromRequest } from '@/lib/auth';
 import Transaction from '@/models/Transaction';
 import Account from '@/models/Account';
 import connectDB from '@/lib/mongodb';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
 export async function POST(req: NextRequest) {
     try {
@@ -86,12 +86,11 @@ ${transactionContext}
 **User Question:** ${message}
 `;
 
-        const model = genAI.getGenerativeModel(
-            { model: "gemini-2.5-flash" },
-            { apiVersion: 'v1' }
-        );
-        const result = await model.generateContent(systemPrompt);
-        const responseText = result.response.text();
+        const result = await ai.models.generateContent({
+            model: "gemini-3-flash-preview",
+            contents: systemPrompt
+        });
+        const responseText = result.text || "I'm sorry, I couldn't generate a response at this time.";
 
         return NextResponse.json({ response: responseText });
 
