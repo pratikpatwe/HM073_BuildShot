@@ -1,5 +1,4 @@
 import Chatbot from '@/components/fianance/Chatbot';
-import Navbar from '@/components/fianance/Navbar';
 
 export default function FiananceLayout({
     children,
@@ -7,8 +6,7 @@ export default function FiananceLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="relative min-h-screen bg-black">
-            <Navbar />
+        <div className="relative min-h-screen bg-[#0b0b0b]">
             {children}
             <Chatbot />
         </div>
