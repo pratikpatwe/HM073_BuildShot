@@ -71,16 +71,16 @@ export async function parseWithGemini(text: string): Promise<ParsedTransaction[]
     try {
         const result = await ai.models.generateContent({
             model: modelName,
-            contents: prompt
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+            }
         });
-        let textResponse = result.text;
 
+        let textResponse = result.text;
         if (!textResponse) {
             throw new Error("Gemini returned an empty response.");
         }
-
-        // Clean up markdown code blocks if present
-        textResponse = textResponse.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
 
         const rawTransactions = JSON.parse(textResponse);
 
