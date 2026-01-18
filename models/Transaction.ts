@@ -41,7 +41,7 @@ const TransactionSchema: Schema = new Schema(
             required: [true, 'Account ID is required'],
         },
         userId: {
-            type: String, // Clerk ID
+            type: String, // User ID
             required: [true, 'User ID is required'],
             index: true,
         },

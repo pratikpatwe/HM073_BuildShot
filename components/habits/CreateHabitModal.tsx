@@ -56,6 +56,20 @@ export function CreateHabitModal({ onAddHabit }: CreateHabitModalProps) {
     const [category, setCategory] = useState("Health")
     const [iconName, setIconName] = useState("Target")
     const [selectedDays, setSelectedDays] = useState<number[]>([new Date().getDay() === 0 ? 0 : new Date().getDay()])
+    const [selectedColor, setSelectedColor] = useState("#FF9F0A")
+
+    const COLORS = [
+        "#FF9F0A", // Orange
+        "#945FF4", // Purple
+        "#30D5C8", // Teal
+        "#34C759", // Green
+        "#007AFF", // Blue
+        "#FF3B30", // Red
+        "#FF2D55", // Pink
+        "#5856D6", // Indigo
+        "#FFCC00", // Yellow
+        "#AF52DE", // Deep Purple
+    ]
 
     const WEEKDAYS = [
         { id: 1, label: "M" },
@@ -108,12 +122,13 @@ export function CreateHabitModal({ onAddHabit }: CreateHabitModalProps) {
         onAddHabit({
             id: Math.random().toString(36).substr(2, 9),
             name,
-            type: type === "Custom" ? `Custom (${selectedDays.length} days)` : type,
+            type: type,
             category,
             streak: 0,
             bestStreak: 0,
             status: "none",
             iconName,
+            color: selectedColor,
             customDays: type === "Custom" ? selectedDays : null,
         })
 
@@ -240,6 +255,26 @@ export function CreateHabitModal({ onAddHabit }: CreateHabitModalProps) {
                                 </div>
                             </div>
                         )}
+
+                        <div className="space-y-3">
+                            <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest ml-1">Habit Color</label>
+                            <div className="flex flex-wrap gap-3 px-1">
+                                {COLORS.map((color) => (
+                                    <button
+                                        key={color}
+                                        type="button"
+                                        onClick={() => setSelectedColor(color)}
+                                        className={cn(
+                                            "w-7 h-7 rounded-full transition-all duration-300 transform hover:scale-125 border-2 cursor-pointer",
+                                            selectedColor === color
+                                                ? "border-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+                                                : "border-transparent"
+                                        )}
+                                        style={{ backgroundColor: color }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
 
 
                         <div className="flex gap-4 pt-4">
