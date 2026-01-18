@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Plus, X, FileText, MessageSquare, PlusCircle } from 'lucide-react';
-import { Button } from '@/components/fianance/ui/button';
+import { Button } from '@/components/finance/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -10,7 +10,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import FileUpload from '@/components/fianance/FileUpload';
+import FileUpload from '@/components/finance/FileUpload';
 import { cn } from '@/lib/utils';
 
 const BANKS = ['HDFC', 'SBI', 'ICICI', 'Axis', 'Kotak', 'PNB', 'BOB', 'Other'];
@@ -45,7 +45,7 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
             formData.append('file', file);
             formData.append('bankName', bankName);
 
-            const response = await fetch('/api/fianance/upload/pdf', {
+            const response = await fetch('/api/finance/upload/pdf', {
                 method: 'POST',
                 body: formData,
             });
@@ -73,7 +73,7 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
         setResult(null);
 
         try {
-            const response = await fetch('/api/fianance/transactions', {
+            const response = await fetch('/api/finance/transactions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -123,7 +123,7 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
         setResult(null);
 
         try {
-            const response = await fetch('/api/fianance/upload/sms', {
+            const response = await fetch('/api/finance/upload/sms', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

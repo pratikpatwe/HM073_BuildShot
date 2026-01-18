@@ -1,6 +1,6 @@
-import Chatbot from '@/components/fianance/Chatbot';
+import Chatbot from '@/components/finance/Chatbot';
 
-export default function FiananceLayout({
+export default function FinanceLayout({
     children,
 }: {
     children: React.ReactNode;
