@@ -150,6 +150,7 @@ function OnboardingContent() {
                 email,
                 password,
                 options: {
+                    emailRedirectTo: `${window.location.origin}/auth/callback`,
                     data: {
                         first_name: firstName,
                         last_name: lastName,
