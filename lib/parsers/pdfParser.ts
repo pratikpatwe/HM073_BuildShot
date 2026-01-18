@@ -1,10 +1,11 @@
 // @ts-ignore
 import PDFParser from 'pdf2json';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { normalizeTransaction } from '../normalizer';
 import { categorizeTransaction, Category } from '../categorizer';
 import { Channel } from '../normalizer';
 
+// Transaction types
 export type TransactionType = 'credit' | 'debit';
 
 export interface ParsedTransaction {
@@ -19,12 +20,8 @@ export interface ParsedTransaction {
     tags: string[];
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-// Using gemini-2.5-flash - Latest stable high-performance model
-const model = genAI.getGenerativeModel(
-    { model: 'gemini-2.5-flash' },
-    { apiVersion: 'v1' }
-);
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+const modelName = 'gemini-3-flash-preview';
 
 async function extractTextFromPDF(buffer: Buffer): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -72,9 +69,15 @@ export async function parseWithGemini(text: string): Promise<ParsedTransaction[]
     `;
 
     try {
-        const result = await model.generateContent(prompt);
-        const response = result.response;
-        let textResponse = response.text();
+        const result = await ai.models.generateContent({
+            model: modelName,
+            contents: prompt
+        });
+        let textResponse = result.text;
+
+        if (!textResponse) {
+            throw new Error("Gemini returned an empty response.");
+        }
 
         // Clean up markdown code blocks if present
         textResponse = textResponse.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
