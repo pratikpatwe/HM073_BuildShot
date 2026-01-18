@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import Link from 'next/link';
 import CategoryChart from '@/components/fianance/CategoryChart';
+import { AddTransactionModal } from '@/components/fianance/AddTransactionModal';
+import { TransactionsModal } from '@/components/fianance/TransactionsModal';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/fianance/ui/card';
 import { Button } from '@/components/fianance/ui/button';
 import {
@@ -13,10 +15,12 @@ import {
     ArrowDownRight,
     PiggyBank,
     Activity,
+    TrendingUp,
+    Plus,
     RefreshCw,
     CreditCard,
-    TrendingUp,
-    Download
+    Download,
+    Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -120,7 +124,7 @@ export default function FiananceDashboardPage() {
 
     if (!isLoaded || !user) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-black">
+            <div className="min-h-screen flex items-center justify-center bg-[#0b0b0b]">
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
                     <p className="text-zinc-500 text-sm animate-pulse">Loading...</p>
@@ -136,7 +140,7 @@ export default function FiananceDashboardPage() {
     const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
 
     return (
-        <div className="min-h-screen bg-black text-white pb-20">
+        <div className="min-h-screen bg-[#0b0b0b] text-white pb-20">
             {/* Ambient Background - Subtle Grayscale */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 <div className="absolute top-0 right-1/4 w-96 h-96 bg-zinc-800/20 rounded-full blur-3xl opacity-20" />
@@ -146,21 +150,34 @@ export default function FiananceDashboardPage() {
             <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-                    <div>
-                        <h1 className="text-4xl font-bold tracking-tight text-white">
-                            Dashboard
-                        </h1>
-                        <p className="text-zinc-400 mt-2 text-lg font-light">
-                            Overview for {userName}
-                        </p>
+                    <div className="flex items-center gap-6">
+                        <div className="relative w-16 h-16 shrink-0 lg:w-20 lg:h-20">
+                            <Image
+                                src="/kairos-logo.svg"
+                                alt="Kairos Logo"
+                                fill
+                                className="object-contain"
+                            />
+                        </div>
+                        <div>
+                            <h1 className="text-4xl font-bold tracking-tight text-white uppercase tracking-wider">
+                                Spend Tracker
+                            </h1>
+                            <p className="text-zinc-400 mt-2 text-lg font-light">
+                                Overview for {userName}
+                            </p>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <Link href="/fianance/upload">
-                            <Button variant="outline" className="gap-2 border-zinc-700 hover:bg-zinc-800 text-white hover:text-white">
-                                <Download className="w-4 h-4" />
-                                Upload Statement
-                            </Button>
-                        </Link>
+                    <div className="flex items-center gap-2">
+                        <TransactionsModal
+                            onDeleteSuccess={fetchData}
+                            trigger={
+                                <Button variant="outline" className="w-10 h-10 p-0 border-zinc-700 hover:bg-zinc-800 text-white cursor-pointer rounded-xl">
+                                    <Search className="w-4 h-4" />
+                                </Button>
+                            }
+                        />
+                        <AddTransactionModal onSuccess={fetchData} />
                         <Button
                             variant="secondary"
                             onClick={() => {
@@ -189,10 +206,10 @@ export default function FiananceDashboardPage() {
                             <Card className="bg-zinc-900/50 border-zinc-800">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium text-zinc-400">Total Income</CardTitle>
-                                    <ArrowUpRight className="h-4 w-4 text-white" />
+                                    <ArrowUpRight className="h-4 w-4 text-emerald-500" />
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-3xl font-bold text-white tracking-tight">{formatAmount(analytics.summary.totalIncome)}</div>
+                                    <div className="text-3xl font-bold text-emerald-500 tracking-tight">{formatAmount(analytics.summary.totalIncome)}</div>
                                     <p className="text-xs text-zinc-500 mt-1">Inflow this period</p>
                                 </CardContent>
                             </Card>
@@ -200,10 +217,10 @@ export default function FiananceDashboardPage() {
                             <Card className="bg-zinc-900/50 border-zinc-800">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium text-zinc-400">Total Expenses</CardTitle>
-                                    <ArrowDownRight className="h-4 w-4 text-white" />
+                                    <ArrowDownRight className="h-4 w-4 text-red-500" />
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-3xl font-bold text-white tracking-tight">{formatAmount(analytics.summary.totalExpense)}</div>
+                                    <div className="text-3xl font-bold text-red-500 tracking-tight">{formatAmount(analytics.summary.totalExpense)}</div>
                                     <p className="text-xs text-zinc-500 mt-1">Outflow this period</p>
                                 </CardContent>
                             </Card>
@@ -211,10 +228,10 @@ export default function FiananceDashboardPage() {
                             <Card className="bg-zinc-900/50 border-zinc-800">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium text-zinc-400">Net Savings</CardTitle>
-                                    <PiggyBank className="h-4 w-4 text-white" />
+                                    <PiggyBank className="h-4 w-4 text-blue-500" />
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-3xl font-bold text-white tracking-tight">{formatAmount(analytics.summary.savings)}</div>
+                                    <div className="text-3xl font-bold text-blue-500 tracking-tight">{formatAmount(analytics.summary.savings)}</div>
                                     <p className="text-xs text-zinc-500 mt-1">
                                         {analytics.summary.totalIncome > 0 ? (analytics.summary.savings / analytics.summary.totalIncome * 100).toFixed(1) : 0}% savings rate
                                     </p>
@@ -299,12 +316,7 @@ export default function FiananceDashboardPage() {
                                     <CardTitle className="text-white">Recent Activity</CardTitle>
                                     <CardDescription className="text-zinc-500">Latest transactions</CardDescription>
                                 </div>
-                                <Link href="/fianance/transactions">
-                                    <Button variant="ghost" className="text-zinc-400 hover:text-white hover:bg-zinc-800">
-                                        View All
-                                        <ArrowUpRight className="w-4 h-4 ml-1" />
-                                    </Button>
-                                </Link>
+                                <TransactionsModal onDeleteSuccess={fetchData} />
                             </CardHeader>
                             <CardContent>
                                 {recentTransactions.length > 0 ? (
@@ -351,12 +363,7 @@ export default function FiananceDashboardPage() {
                                         <p className="text-zinc-500 max-w-sm mx-auto mt-2 mb-6">
                                             Upload your statement to get started.
                                         </p>
-                                        <Link href="/fianance/upload">
-                                            <Button className="bg-white text-black hover:bg-zinc-200">
-                                                <Download className="w-4 h-4 mr-2" />
-                                                Upload First Statement
-                                            </Button>
-                                        </Link>
+                                        <AddTransactionModal onSuccess={fetchData} />
                                     </div>
                                 )}
                             </CardContent>
@@ -378,16 +385,11 @@ export default function FiananceDashboardPage() {
                             Get started by uploading a statement to see your spend analysis, income tracking, and savings goals.
                         </p>
                         <div className="flex items-center gap-4">
-                            <Link href="/fianance/upload">
-                                <Button size="lg" className="bg-white text-black hover:bg-zinc-200 border-0 shadow-lg shadow-white/5">
-                                    <Download className="w-5 h-5 mr-2" />
-                                    Upload Statement
-                                </Button>
-                            </Link>
+                            <AddTransactionModal onSuccess={fetchData} />
                         </div>
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }

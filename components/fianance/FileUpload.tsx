@@ -128,7 +128,7 @@ export default function FileUpload({
                                 e.stopPropagation();
                                 clearFile();
                             }}
-                            className="mt-4 px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors border border-zinc-700"
+                            className="mt-4 px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors border border-zinc-700 cursor-pointer"
                         >
                             Remove file
                         </button>

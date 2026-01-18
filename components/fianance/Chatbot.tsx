@@ -93,7 +93,7 @@ export default function Chatbot() {
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="fixed bottom-6 right-6 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-50 group"
+                    className="fixed bottom-6 right-6 p-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-50 group cursor-pointer"
                     aria-label="Open Financial Assistant"
                 >
                     <MessageCircle size={24} className="group-hover:scale-110 transition-transform" />
@@ -105,14 +105,14 @@ export default function Chatbot() {
                 <div className="fixed bottom-6 right-6 w-96 max-w-[90vw] h-[500px] max-h-[80vh] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-300">
 
                     {/* Header */}
-                    <div className="bg-blue-600 p-4 flex justify-between items-center text-white shrink-0">
+                    <div className="bg-emerald-600 p-4 flex justify-between items-center text-white shrink-0">
                         <div className="flex items-center gap-2">
                             <Bot size={20} />
                             <h3 className="font-semibold">Financial Assistant</h3>
                         </div>
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="hover:bg-blue-700 p-1 rounded-full transition-colors"
+                            className="hover:bg-emerald-700 p-1 rounded-full transition-colors cursor-pointer"
                         >
                             <X size={20} />
                         </button>
@@ -126,13 +126,13 @@ export default function Chatbot() {
                                 className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
                                 {msg.role === 'bot' && (
-                                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center shrink-0">
-                                        <Bot size={16} className="text-blue-600 dark:text-blue-300" />
+                                    <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+                                        <Bot size={16} className="text-emerald-600 dark:text-emerald-400" />
                                     </div>
                                 )}
 
                                 <div className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm ${msg.role === 'user'
-                                    ? 'bg-blue-600 text-white rounded-br-none'
+                                    ? 'bg-emerald-600 text-white rounded-br-none'
                                     : 'bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 rounded-bl-none shadow-sm'
                                     }`}>
                                     <div className="whitespace-pre-wrap leading-relaxed">
@@ -150,8 +150,8 @@ export default function Chatbot() {
 
                         {loading && (
                             <div className="flex gap-3 justify-start">
-                                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center shrink-0">
-                                    <Bot size={16} className="text-blue-600 dark:text-blue-300" />
+                                <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+                                    <Bot size={16} className="text-emerald-600 dark:text-emerald-400" />
                                 </div>
                                 <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-4 py-3 rounded-2xl rounded-bl-none shadow-sm flex items-center gap-1">
                                     <div className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
@@ -172,13 +172,13 @@ export default function Chatbot() {
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
                                 placeholder="Ask about your finances..."
-                                className="flex-1 px-4 py-2 bg-gray-100 dark:bg-zinc-800 border-none rounded-full focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm dark:text-white"
+                                className="flex-1 px-4 py-2 bg-gray-100 dark:bg-zinc-800 border-none rounded-full focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm dark:text-white"
                                 disabled={loading}
                             />
                             <button
                                 onClick={handleSend}
                                 disabled={!input.trim() || loading}
-                                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 rounded-full transition-colors flex items-center justify-center w-10 h-10"
+                                className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 rounded-full transition-colors flex items-center justify-center w-10 h-10 cursor-pointer"
                             >
                                 <Send size={18} />
                             </button>
