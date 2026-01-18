@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/auth';
-import { mockStore } from '@/lib/store';
+import connectDB from '@/lib/mongodb';
+import Transaction from '@/models/Transaction';
 
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const payload = await getUserFromRequest(request);
         if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -18,15 +20,15 @@ export async function GET(request: NextRequest) {
         else if (period === 'year') startDate.setFullYear(now.getFullYear() - 1);
         else if (period === 'all') startDate = null; // No date filter
 
-        // Filter transactions
-        const allTransactions = mockStore.getTransactions(payload.userId);
-        console.log(`[Analytics] User ${payload.userId}, Total transactions: ${allTransactions.length}, Period: ${period}`);
+        // Build query
+        const query: any = { userId: payload.userId };
+        if (startDate) {
+            query.date = { $gte: startDate };
+        }
 
-        const transactions = startDate
-            ? allTransactions.filter(t => new Date(t.date) >= startDate!)
-            : allTransactions; // No filter for 'all'
-
-        console.log(`[Analytics] Filtered transactions: ${transactions.length}`);
+        // Fetch transactions from MongoDB
+        const transactions = await Transaction.find(query).lean();
+        console.log(`[Analytics] User ${payload.userId}, Total transactions: ${transactions.length}, Period: ${period}`);
 
         // Calculate summary
         let totalIncome = 0;
@@ -81,7 +83,6 @@ export async function GET(request: NextRequest) {
         const trendsMap = new Map<string, { income: number; expense: number }>();
 
         transactions.forEach(t => {
-            // Use logic to group by date
             const d = new Date(t.date);
             const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
