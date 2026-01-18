@@ -7,9 +7,8 @@ import { usePathname } from "next/navigation"
 const mainNavigation = [
     { icon: Home, label: "Overview", href: "/dashboard" },
     { icon: Target, label: "Focus Score", href: "/dashboard/focus" },
-    { icon: Wallet, label: "Finances", href: "/dashboard/finances" },
-    { icon: Flame, label: "Habits", href: "/dashboard/habits" },
-    { icon: BookOpen, label: "Journal", href: "/dashboard/journal" },
+    { icon: Wallet, label: "Finances", href: "/finance" },
+    { icon: Flame, label: "Habits", href: "/habits" },
 ]
 
 const secondaryNavigation = [
@@ -47,8 +46,8 @@ export default function DashboardSidebar({ userName = "Alex Johnson", userPlan =
                             key={item.href}
                             href={item.href}
                             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group ${isActive
-                                    ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
-                                    : "text-white/60 hover:text-white hover:bg-white/[0.03]"
+                                ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
+                                : "text-white/60 hover:text-white hover:bg-white/[0.03]"
                                 }`}
                         >
                             <item.icon className={`h-4 w-4 ${isActive ? "text-emerald-400" : "text-white/40 group-hover:text-white/70"}`} />
@@ -70,8 +69,8 @@ export default function DashboardSidebar({ userName = "Alex Johnson", userPlan =
                             key={item.href}
                             href={item.href}
                             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group ${isActive
-                                    ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
-                                    : "text-white/60 hover:text-white hover:bg-white/[0.03]"
+                                ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
+                                : "text-white/60 hover:text-white hover:bg-white/[0.03]"
                                 }`}
                         >
                             <item.icon className={`h-4 w-4 ${isActive ? "text-emerald-400" : "text-white/40 group-hover:text-white/70"}`} />
