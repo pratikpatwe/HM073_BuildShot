@@ -59,7 +59,7 @@ export default function Chatbot() {
         setLoading(true);
 
         try {
-            const res = await fetch('/api/fianance/chat', {
+            const res = await fetch('/api/finance/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: userMessage }),

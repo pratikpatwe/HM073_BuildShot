@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Search, Filter, ArrowUpDown, ArrowUpRight, X } from 'lucide-react';
-import { Button } from '@/components/fianance/ui/button';
+import { Button } from '@/components/finance/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -10,7 +10,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import TransactionList from '@/components/fianance/TransactionList';
+import TransactionList from '@/components/finance/TransactionList';
 import { cn } from '@/lib/utils';
 
 const CATEGORIES = ['All', 'Food', 'Travel', 'Shopping', 'Entertainment', 'Bills', 'Health', 'Education', 'Rent', 'Salary', 'Investment', 'Transfer', 'Other'];
@@ -57,7 +57,7 @@ export function TransactionsModal({ onDeleteSuccess, trigger }: TransactionsModa
             if (type !== 'all') params.append('type', type);
             if (search) params.append('search', search);
 
-            const response = await fetch(`/api/fianance/transactions?${params}`);
+            const response = await fetch(`/api/finance/transactions?${params}`);
 
             if (response.ok) {
                 const data = await response.json();
@@ -79,7 +79,7 @@ export function TransactionsModal({ onDeleteSuccess, trigger }: TransactionsModa
         if (!confirm(`Delete ${ids.length} transaction(s)?`)) return;
 
         try {
-            const response = await fetch('/api/fianance/transactions', {
+            const response = await fetch('/api/finance/transactions', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',

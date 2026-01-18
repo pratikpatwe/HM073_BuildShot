@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import CategoryChart from '@/components/fianance/CategoryChart';
-import { AddTransactionModal } from '@/components/fianance/AddTransactionModal';
-import { TransactionsModal } from '@/components/fianance/TransactionsModal';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/fianance/ui/card';
-import { Button } from '@/components/fianance/ui/button';
+import CategoryChart from '@/components/finance/CategoryChart';
+import { AddTransactionModal } from '@/components/finance/AddTransactionModal';
+import { TransactionsModal } from '@/components/finance/TransactionsModal';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/finance/ui/card';
+import { Button } from '@/components/finance/ui/button';
 import {
     Wallet,
     ArrowUpRight,
@@ -53,7 +53,7 @@ interface Transaction {
     category: string;
 }
 
-export default function FiananceDashboardPage() {
+export default function FinanceDashboardPage() {
     const supabase = createClient();
     const router = useRouter();
     const [user, setUser] = useState<any>(null);
@@ -104,13 +104,13 @@ export default function FiananceDashboardPage() {
 
     const fetchData = async () => {
         try {
-            const analyticsRes = await fetch('/api/fianance/analytics?period=all');
+            const analyticsRes = await fetch('/api/finance/analytics?period=all');
             if (analyticsRes.ok) {
                 const data = await analyticsRes.json();
                 setAnalytics(data);
             }
 
-            const txnRes = await fetch('/api/fianance/transactions?limit=5&sortBy=date&sortOrder=desc');
+            const txnRes = await fetch('/api/finance/transactions?limit=5&sortBy=date&sortOrder=desc');
             if (txnRes.ok) {
                 const data = await txnRes.json();
                 setRecentTransactions(data.transactions);

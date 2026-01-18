@@ -1,6 +1,6 @@
 "use client"
 
-import { Check, MoreVertical, Undo2, Book, Dumbbell, Flower2, PenTool, Wine, Leaf } from "lucide-react"
+import { Check, MoreVertical, Undo2, Book, Dumbbell, Flower2, PenTool, Wine, Leaf, Target, Circle, Heart, Sparkles, Brain, Coffee, Music, Moon, Sun, Star, Zap, Trophy, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
@@ -17,6 +17,7 @@ export interface Habit {
     bestStreak: number
     status: HabitStatus
     note?: string
+    iconName?: string
 }
 
 interface HabitCardProps {
@@ -32,10 +33,15 @@ export function HabitCard({ habit, onStatusChange }: HabitCardProps) {
         Learning: { border: "border-[#945FF4]", bg: "bg-[#945FF4]/10", text: "text-[#945FF4]", gradient: "from-[#945FF4] to-[#B085FF]", icon: Dumbbell },
         Finance: { border: "border-[#30D5C8]", bg: "bg-[#30D5C8]/10", text: "text-[#30D5C8]", gradient: "from-[#30D5C8] to-[#5EEAD4]", icon: Flower2 },
         Mind: { border: "border-[#34C759]", bg: "bg-[#34C759]/10", text: "text-[#34C759]", gradient: "from-[#34C759] to-[#60E080]", icon: Leaf },
+        Other: { border: "border-[#E4E4E7]", bg: "bg-[#E4E4E7]/10", text: "text-[#E4E4E7]", gradient: "from-[#71717A] to-[#A1A1AA]", icon: Target },
     }
 
-    const style = categoryStyles[habit.category] || categoryStyles.Mind
-    const Icon = style.icon
+    const iconMap: Record<string, any> = {
+        Target, Circle, Heart, Sparkles, Brain, Coffee, Music, Moon, Sun, Star, Zap, Trophy, Book, Dumbbell, Flower2, PenTool, Wine, Leaf, User
+    }
+
+    const style = categoryStyles[habit.category] || categoryStyles.Other
+    const Icon = habit.iconName ? (iconMap[habit.iconName] || style.icon) : style.icon
 
     return (
         <div
@@ -64,7 +70,7 @@ export function HabitCard({ habit, onStatusChange }: HabitCardProps) {
                         </h3>
                     </div>
                     <button className={cn(
-                        "p-1.5 rounded-lg hover:bg-white/10 transition-colors",
+                        "p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer",
                         isDone ? "text-white/50" : "text-white/20"
                     )}>
                         <MoreVertical className="w-4 h-4" />
@@ -81,7 +87,7 @@ export function HabitCard({ habit, onStatusChange }: HabitCardProps) {
                         </div>
                         <button
                             onClick={() => onStatusChange(habit.id, "none")}
-                            className="text-[11px] font-bold text-white/70 hover:text-white flex items-center gap-1.5 transition-colors bg-white/10 px-3 py-1 rounded-full border border-white/10"
+                            className="text-[11px] font-bold text-white/70 hover:text-white flex items-center gap-1.5 transition-colors bg-white/10 px-3 py-1 rounded-full border border-white/10 cursor-pointer"
                         >
                             <Undo2 className="w-3.5 h-3.5" /> Undo
                         </button>
