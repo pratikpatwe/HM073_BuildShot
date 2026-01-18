@@ -11,7 +11,7 @@ export type HabitStatus = "done" | "skipped" | "none"
 export interface Habit {
     id: string
     name: string
-    type: "Daily" | "Weekly" | "Custom"
+    type: "Daily" | "Weekdays" | "Weekends" | "Custom"
     category: string
     reminderTime?: string
     streak: number
@@ -21,6 +21,7 @@ export interface Habit {
     iconName?: string
     customDays?: number[]
     color?: string
+    isDeleted?: boolean
     weeklyLogs?: { date: string | Date, status: HabitStatus }[]
 }
 

@@ -50,12 +50,38 @@ export function UpdateFrequencyModal({ habit, isOpen, onClose, onUpdate }: Updat
         }
     }
 
+    const handleFrequencyChange = (newType: string) => {
+        setType(newType as "Daily" | "Weekdays" | "Weekends" | "Custom");
+
+        // Auto-select days based on frequency type
+        if (newType === "Weekdays") {
+            setSelectedDays([1, 2, 3, 4, 5]); // Mon-Fri
+        } else if (newType === "Weekends") {
+            setSelectedDays([6, 0]); // Sat-Sun
+        } else if (newType === "Daily") {
+            setSelectedDays([0, 1, 2, 3, 4, 5, 6]); // All days
+        }
+    }
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         if (!habit) return
+
+        // Determine custom days based on type
+        let customDays = null;
+        if (type === "Weekdays") {
+            customDays = [1, 2, 3, 4, 5];
+        } else if (type === "Weekends") {
+            customDays = [6, 0];
+        } else if (type === "Custom") {
+            customDays = selectedDays;
+        } else if (type === "Daily") {
+            customDays = null; // Daily means all days
+        }
+
         onUpdate(habit.id, {
             type,
-            customDays: type === "Custom" ? selectedDays : null
+            customDays: customDays
         })
         onClose()
     }
@@ -77,11 +103,12 @@ export function UpdateFrequencyModal({ habit, isOpen, onClose, onUpdate }: Updat
                             <div className="relative">
                                 <select
                                     value={type}
-                                    onChange={(e) => setType(e.target.value as any)}
+                                    onChange={(e) => handleFrequencyChange(e.target.value)}
                                     className="w-full bg-white/[0.03] border border-white/5 rounded-2xl h-14 px-4 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500/20 transition-all text-sm appearance-none cursor-pointer uppercase font-bold tracking-tight text-[10px]"
                                 >
                                     <option value="Daily" className="bg-[#0B0B0B]">Daily</option>
-                                    <option value="Weekly" className="bg-[#0B0B0B]">Weekly</option>
+                                    <option value="Weekdays" className="bg-[#0B0B0B]">Weekdays</option>
+                                    <option value="Weekends" className="bg-[#0B0B0B]">Weekends</option>
                                     <option value="Custom" className="bg-[#0B0B0B]">Custom</option>
                                 </select>
                                 <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-500 pointer-events-none" />

@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
         const weekStartParam = searchParams.get('weekStart');
         const weekEndParam = searchParams.get('weekEnd');
 
-        const habits = await Habit.find({ userId });
+        const habits = await Habit.find({ userId }).lean();
 
         // Get logs for the last 30 days OR the requested week range
         const now = new Date();
@@ -41,20 +41,24 @@ export async function GET(req: NextRequest) {
         const logs = await HabitLog.find({
             userId,
             date: { $gte: queryStart, $lte: queryEnd }
-        });
+        }).lean();
 
-        // Merge status into habits for the frontend
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Merge status into habits efficiently
         const habitsWithStatus = habits.map(habit => {
-            const habitLogs = logs.filter(l => l.habitId && l.habitId.toString() === habit._id.toString());
-
-            // Current day status for the checklist
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const todayLog = habitLogs.find(l => l.date.getTime() === today.getTime());
+            const hId = habit._id.toString();
+            const habitLogs = logs.filter(l => l.habitId && l.habitId.toString() === hId);
+            const todayLog = habitLogs.find(l => {
+                const d = new Date(l.date);
+                d.setHours(0, 0, 0, 0);
+                return d.getTime() === today.getTime();
+            });
 
             return {
-                ...habit.toObject(),
-                id: habit._id.toString(),
+                ...habit,
+                id: hId,
                 status: todayLog ? todayLog.status : 'none',
                 weeklyLogs: habitLogs.map(l => ({
                     date: l.date,
@@ -140,13 +144,16 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ error: 'Habit ID required' }, { status: 400 });
         }
 
-        const result = await Habit.deleteOne({ _id: id, userId });
+        const result = await Habit.findOneAndUpdate(
+            { _id: id, userId },
+            { $set: { isDeleted: true } },
+            { new: true }
+        );
 
-        if (result.deletedCount === 0) {
+        if (!result) {
             return NextResponse.json({ error: 'Habit not found' }, { status: 404 });
         }
 
-        // We do NOT delete HabitLogs here as per user request
         return NextResponse.json({ success: true });
     } catch (error: any) {
         console.error("Habits DELETE error:", error);

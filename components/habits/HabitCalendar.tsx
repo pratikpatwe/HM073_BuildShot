@@ -45,9 +45,8 @@ export function HabitCalendar({ habits, weekStart }: HabitCalendarProps) {
                     <div className="text-[11px] text-white/20 font-bold uppercase tracking-[0.25em] text-right pr-4">Stats</div>
                 </div>
 
-                {/* Habit Rows */}
                 <div className="space-y-8">
-                    {habits.filter(h => h.id).map((habit, habitIdx) => {
+                    {habits.filter(h => h.id && (!h.isDeleted || (h.weeklyLogs && h.weeklyLogs.length > 0))).map((habit, habitIdx) => {
                         const Icon = habit.iconName ? (iconMap[habit.iconName] || Target) : Target
                         const habitColor = habit.color || "#FF9F0A"
 

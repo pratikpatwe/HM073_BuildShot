@@ -12,6 +12,7 @@ export interface IHabit extends Document {
     bestStreak: number;
     createdAt: Date;
     updatedAt: Date;
+    isDeleted: boolean;
 }
 
 const HabitSchema: Schema = new Schema(
@@ -29,7 +30,7 @@ const HabitSchema: Schema = new Schema(
         type: {
             type: String,
             required: true,
-            enum: ['Daily', 'Weekly', 'Custom'],
+            enum: ['Daily', 'Weekdays', 'Weekends', 'Custom'],
             default: 'Daily',
         },
         category: {
@@ -55,6 +56,10 @@ const HabitSchema: Schema = new Schema(
         bestStreak: {
             type: Number,
             default: 0,
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false,
         },
     },
     {

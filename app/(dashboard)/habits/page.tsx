@@ -26,6 +26,7 @@ export default function HabitsPage() {
     const [timeLeft, setTimeLeft] = useState("")
     const [editingHabit, setEditingHabit] = useState<Habit | null>(null)
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
+    const [loading, setLoading] = useState(true)
 
     const getMonday = (d: Date) => {
         const date = new Date(d);
@@ -79,6 +80,8 @@ export default function HabitsPage() {
             setHabits(data)
         } catch (error) {
             toast.error("Failed to load habits")
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -91,6 +94,12 @@ export default function HabitsPage() {
     }
 
     const handleAddHabit = async (newHabit: any) => {
+        const tempId = Math.random().toString(36).substr(2, 9);
+        const habitWithTempId = { ...newHabit, id: tempId, streak: 0, bestStreak: 0, status: "none", weeklyLogs: [] };
+
+        // Optimistic Update - UI responds instantly
+        setHabits(prev => [...prev, habitWithTempId]);
+
         try {
             const res = await fetch('/api/habits', {
                 method: 'POST',
@@ -99,14 +108,17 @@ export default function HabitsPage() {
             })
             if (!res.ok) throw new Error("Failed to create habit")
             const data = await res.json()
-            setHabits(prev => [...prev, data])
-            toast.success("Habit created!")
+
+            // Replace temp id with real id from DB
+            setHabits(prev => prev.map(h => h.id === tempId ? data : h));
         } catch (error) {
-            toast.error("Failed to create habit")
+            setHabits(prev => prev.filter(h => h.id !== tempId));
+            toast.error("Failed to create habit");
         }
     }
 
     const handleStatusChange = async (id: string, status: HabitStatus) => {
+        const originalHabits = [...habits];
         try {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -138,27 +150,34 @@ export default function HabitsPage() {
             })
             if (!res.ok) throw new Error()
 
-            // Re-fetch to get updated streaks and stats from backend
+            // Silently re-fetch to get updated streaks/stats without blocking
             fetchHabits();
-            toast.success(status === 'done' ? "Way to go!" : "Updated")
         } catch (error) {
             toast.error("Failed to update status")
-            fetchHabits() // Rollback
+            setHabits(originalHabits); // Rollback
         }
     }
 
     const handleDeleteHabit = async (id: string) => {
+        const originalHabits = [...habits];
+        // Optimistic Delete (Soft)
+        setHabits(prev => prev.map(h => h.id === id ? { ...h, isDeleted: true } : h));
+
         try {
             const res = await fetch(`/api/habits?id=${id}`, { method: 'DELETE' })
             if (!res.ok) throw new Error()
-            setHabits(prev => prev.filter(h => h.id !== id))
             toast.success("Habit deleted")
         } catch (error) {
+            setHabits(originalHabits); // Rollback
             toast.error("Failed to delete habit")
         }
     }
 
     const handleUpdateFrequency = async (id: string, updates: any) => {
+        const originalHabits = [...habits];
+        // Optimistic Update
+        setHabits(prev => prev.map(h => h.id === id ? { ...h, ...updates } : h));
+
         try {
             const res = await fetch(`/api/habits?id=${id}`, {
                 method: 'PATCH',
@@ -166,9 +185,10 @@ export default function HabitsPage() {
                 body: JSON.stringify(updates)
             })
             if (!res.ok) throw new Error()
-            fetchHabits()
+            fetchHabits(); // Silently sync
             toast.success("Frequency updated")
         } catch (error) {
+            setHabits(originalHabits); // Rollback
             toast.error("Failed to update frequency")
         }
     }
@@ -185,21 +205,30 @@ export default function HabitsPage() {
     }
 
     const activeHabitsToday = habits.filter(h => {
-        if (h.type === 'Daily' || h.type === 'Weekly') return true;
+        if (h.isDeleted) return false;
+        const today = new Date().getDay();
+
+        if (h.type === 'Daily') return true;
+        if (h.type === 'Weekdays') {
+            return [1, 2, 3, 4, 5].includes(today); // Mon-Fri
+        }
+        if (h.type === 'Weekends') {
+            return [0, 6].includes(today); // Sat-Sun
+        }
         if (h.type === 'Custom' && h.customDays) {
-            return h.customDays.includes(new Date().getDay());
+            return h.customDays.includes(today);
         }
         return true;
     });
 
     const stats = {
-        completedToday: habits.filter(h => h.status === "done").length,
+        completedToday: habits.filter(h => !h.isDeleted && h.status === "done").length,
         totalHabits: activeHabitsToday.length || 1,
         bestStreak: habits.length > 0 ? Math.max(...habits.map(h => Math.max(0, h.bestStreak || 0))) : 0,
         currentStreak: habits.length > 0 ? habits[0].streak : 0,
         missedDays: 2,
-        bestHabit: [...habits].sort((a, b) => b.streak - a.streak)[0]?.name || "None",
-        weakHabit: [...habits].sort((a, b) => a.streak - b.streak)[0]?.name || "None",
+        bestHabit: habits.filter(h => !h.isDeleted).sort((a, b) => b.streak - a.streak)[0]?.name || "None",
+        weakHabit: habits.filter(h => !h.isDeleted).sort((a, b) => a.streak - b.streak)[0]?.name || "None",
     }
 
     const todayProgress = habits.length > 0 ? (stats.completedToday / stats.totalHabits) * 100 : 0;
@@ -238,10 +267,19 @@ export default function HabitsPage() {
                 checkDate.setDate(monday.getDate() + i);
                 if (checkDate > now && checkDate.toLocaleDateString() !== todayStr) break;
 
+
                 const dayId = checkDate.getDay();
-                const isScheduled = habit.type === 'Custom' && habit.customDays
-                    ? habit.customDays.includes(dayId)
-                    : true;
+                let isScheduled = false;
+
+                if (habit.type === 'Daily') {
+                    isScheduled = true;
+                } else if (habit.type === 'Weekdays') {
+                    isScheduled = [1, 2, 3, 4, 5].includes(dayId);
+                } else if (habit.type === 'Weekends') {
+                    isScheduled = [0, 6].includes(dayId);
+                } else if (habit.type === 'Custom' && habit.customDays) {
+                    isScheduled = habit.customDays.includes(dayId);
+                }
 
                 if (isScheduled) totalScheduled++;
             }
@@ -277,6 +315,16 @@ export default function HabitsPage() {
 
     if (!mounted) return null;
 
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#0B0B0B] flex items-center justify-center">
+                <div className="space-y-4 text-center">
+                    <div className="w-12 h-12 rounded-full border-t-2 border-emerald-500 animate-spin mx-auto"></div>
+                    <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest animate-pulse">Loading Habits...</p>
+                </div>
+            </div>
+        );
+    }
     return (
         <div className="min-h-screen bg-[#0B0B0B] text-white pb-20">
             <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
@@ -397,7 +445,7 @@ export default function HabitsPage() {
                             <HabitCalendar habits={habits} weekStart={selectedWeekStart} />
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                {habits.map((habit) => {
+                                {habits.filter(h => !h.isDeleted).map((habit) => {
                                     const habitColor = habit.color || "#FF9F0A";
                                     const iconMap: any = { Target, Heart, Sparkles, Brain, Coffee, Music, Moon, Sun, Star, Zap, Trophy, User, Book, Dumbbell, Flower2, PenTool, Wine, Leaf, Circle };
                                     const Icon = habit.iconName ? (iconMap[habit.iconName] || Target) : Target;
@@ -539,7 +587,7 @@ export default function HabitsPage() {
                         </div>
 
                         <div className="space-y-5">
-                            {habits.map((habit) => (
+                            {habits.filter(h => !h.isDeleted).map((habit) => (
                                 <HabitCard
                                     key={habit.id}
                                     habit={habit}
