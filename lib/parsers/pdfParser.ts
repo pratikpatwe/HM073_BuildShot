@@ -20,8 +20,8 @@ export interface ParsedTransaction {
 }
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-// Using gemini-2.5-flash - verified to work with current API key
-const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+// Using gemini-1.5-flash - stable and high performance
+const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
 async function extractTextFromPDF(buffer: Buffer): Promise<string> {
     return new Promise((resolve, reject) => {

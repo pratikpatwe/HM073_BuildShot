@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/auth';
+import connectDB from '@/lib/mongodb';
 import { parseStatement } from '@/lib/parsers/pdfParser';
-import { mockStore } from '@/lib/store';
+import Account from '@/models/Account';
+import Transaction from '@/models/Transaction';
 
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const payload = await getUserFromRequest(request);
 
         if (!payload) {
@@ -49,33 +52,33 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Find or create account (Mock)
-        let account = mockStore.getAccount(payload.userId, bankName);
+        // Find or create account
+        let account = await Account.findOne({ userId: payload.userId, bankName });
 
         if (!account) {
-            account = mockStore.createAccount({
+            account = await Account.create({
                 userId: payload.userId,
                 bankName,
                 accountType,
             });
         }
 
-        // Create transactions (Mock)
-        const newTxns = mockStore.addTransactions(
-            parsedTransactions.map(t => ({
-                accountId: account._id,
-                userId: payload.userId,
-                date: t.date,
-                amount: t.amount,
-                type: t.type,
-                merchant: t.merchant,
-                rawDescription: t.description,
-                category: t.category,
-                tags: t.tags,
-                channel: t.channel,
-                balanceAfter: t.balance,
-            }))
-        );
+        // Create transactions
+        const transactionData = parsedTransactions.map(t => ({
+            accountId: account!._id,
+            userId: payload.userId,
+            date: t.date,
+            amount: t.amount,
+            type: t.type,
+            merchant: t.merchant,
+            rawDescription: t.description,
+            category: t.category,
+            tags: t.tags,
+            channel: t.channel,
+            balanceAfter: t.balance,
+        }));
+
+        const newTxns = await Transaction.insertMany(transactionData);
 
         return NextResponse.json({
             success: true,
