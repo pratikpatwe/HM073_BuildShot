@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Plus, X, FileText, MessageSquare, PlusCircle } from 'lucide-react';
+import { Plus, X, FileText, MessageSquare, PlusCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/finance/ui/button';
 import {
     Dialog,
@@ -27,6 +27,7 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
     const [bankName, setBankName] = useState('Other');
     const [smsText, setSmsText] = useState('');
     const [isUploading, setIsUploading] = useState(false);
+    const [loadingStep, setLoadingStep] = useState(0);
     const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
 
     // Manual entry state
@@ -36,8 +37,27 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
     const [manualCategory, setManualCategory] = useState('Other');
     const [manualDate, setManualDate] = useState(new Date().toISOString().split('T')[0]);
 
-    const handlePDFUpload = async (file: File) => {
+    const steps = [
+        "Reading File...",
+        "Parsing Transactions...",
+        "Calculating Insights...",
+        "Finalizing Data..."
+    ];
+
+    const startLoadingSteps = () => {
         setIsUploading(true);
+        setLoadingStep(0);
+        const interval = setInterval(() => {
+            setLoadingStep(prev => {
+                if (prev < 2) return prev + 1; // Progress fast to 'Parsing...'
+                return prev;
+            });
+        }, 800);
+        return interval;
+    };
+
+    const handlePDFUpload = async (file: File) => {
+        const interval = startLoadingSteps();
         setResult(null);
 
         try {
@@ -53,6 +73,7 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
             const data = await response.json();
 
             if (response.ok) {
+                setLoadingStep(3); // Jump to final step
                 setResult({ success: true, message: data.message });
                 onSuccess?.();
             } else {
@@ -61,6 +82,7 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
         } catch (error) {
             setResult({ success: false, message: 'Upload failed. Please try again.' });
         } finally {
+            clearInterval(interval);
             setIsUploading(false);
         }
     };
@@ -69,7 +91,7 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
         e.preventDefault();
         if (!manualAmount || !manualDescription) return;
 
-        setIsUploading(true);
+        const interval = startLoadingSteps();
         setResult(null);
 
         try {
@@ -91,6 +113,7 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
             const data = await response.json();
 
             if (response.ok) {
+                setLoadingStep(3);
                 const formattedAmount = new Intl.NumberFormat('en-IN', {
                     style: 'currency',
                     currency: 'INR'
@@ -111,6 +134,7 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
         } catch (error) {
             setResult({ success: false, message: 'Failed to add transaction. Please try again.' });
         } finally {
+            clearInterval(interval);
             setIsUploading(false);
         }
     };
@@ -119,7 +143,7 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
         e.preventDefault();
         if (!smsText.trim()) return;
 
-        setIsUploading(true);
+        const interval = startLoadingSteps();
         setResult(null);
 
         try {
@@ -134,6 +158,7 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
             const data = await response.json();
 
             if (response.ok) {
+                setLoadingStep(3);
                 setResult({ success: true, message: data.message });
                 setSmsText('');
                 onSuccess?.();
@@ -143,6 +168,7 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
         } catch (error) {
             setResult({ success: false, message: 'Processing failed. Please try again.' });
         } finally {
+            clearInterval(interval);
             setIsUploading(false);
         }
     };
@@ -160,8 +186,8 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
             <DialogContent className="bg-[#0B0B0B] border border-white/5 sm:max-w-[500px] rounded-3xl overflow-hidden p-0 shadow-2xl">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/50 via-white/5 to-white/5"></div>
 
-                <div className="p-8">
-                    <DialogHeader className="mb-8">
+                <div className="p-6">
+                    <DialogHeader className="mb-6">
                         <DialogTitle className="text-3xl font-bold text-white tracking-tight uppercase">Add Transactions</DialogTitle>
                         <p className="text-zinc-500 text-sm mt-1">Import bank statement, SMS, or enter manually.</p>
                     </DialogHeader>
@@ -235,6 +261,8 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
                                     label="Drop statement here"
                                     description="Supports HDFC, SBI, ICICI..."
                                     isLoading={isUploading}
+                                    loadingStep={loadingStep}
+                                    steps={steps}
                                 />
                             )}
 
@@ -249,9 +277,10 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
                                     <Button
                                         type="submit"
                                         disabled={isUploading || !smsText.trim()}
-                                        className="w-full py-6 bg-white text-black font-bold uppercase tracking-widest rounded-2xl hover:bg-zinc-200 transition-all disabled:opacity-50"
+                                        className="w-full py-6 bg-white text-black font-bold uppercase tracking-widest rounded-2xl hover:bg-zinc-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                                     >
-                                        {isUploading ? 'Parsing...' : 'Process SMS'}
+                                        {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                        {isUploading ? steps[loadingStep] : 'Process SMS'}
                                     </Button>
                                 </form>
                             )}
@@ -337,11 +366,12 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
                                         type="submit"
                                         disabled={isUploading || !manualAmount || !manualDescription}
                                         className={cn(
-                                            "w-full py-6 font-bold uppercase tracking-widest rounded-2xl transition-all",
+                                            "w-full py-6 font-bold uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-2",
                                             manualType === 'credit' ? "bg-emerald-500 hover:bg-emerald-600 text-black" : "bg-white text-black hover:bg-zinc-200"
                                         )}
                                     >
-                                        {isUploading ? 'Saving...' : `Add ${manualType === 'credit' ? 'Income' : 'Expense'}`}
+                                        {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                        {isUploading ? steps[loadingStep] : `Add ${manualType === 'credit' ? 'Income' : 'Expense'}`}
                                     </Button>
                                 </form>
                             )}
