@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
+import Link from "next/link"
 import Image from "next/image"
 import { HabitCard, type Habit, type HabitStatus } from "@/components/habits/HabitCard"
 import { HabitCalendar } from "@/components/habits/HabitCalendar"
@@ -9,8 +10,10 @@ import { UpdateFrequencyModal } from "@/components/habits/UpdateFrequencyModal"
 import {
     Sparkles, Clock, ChevronLeft, ChevronRight, TrendingUp, LayoutGrid, List, Target, Settings2,
     Book, Dumbbell, Flower2, Leaf, Wine, PenTool, Circle, Heart, Brain, Coffee, Music, Moon, Sun, Star, Zap, Trophy, User,
-    MoreVertical, Trash2, Settings
+    MoreVertical, Trash2, Settings,
+    Home, Wallet, BookOpen, CheckCircle
 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
@@ -327,31 +330,32 @@ export default function HabitsPage() {
     }
     return (
         <div className="min-h-screen bg-[#0B0B0B] text-white pb-20">
-            <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-                    <div className="flex items-center gap-6">
-                        <div className="relative w-16 h-16 shrink-0 lg:w-20 lg:h-20">
+                <div className="flex flex-col gap-4 mb-8 sm:mb-10">
+                    <div className="flex items-center gap-4 sm:gap-6">
+                        <Link href="/" className="relative w-12 h-12 shrink-0 sm:w-16 sm:h-16 lg:w-20 lg:h-20 hover:opacity-80 transition-opacity cursor-pointer">
                             <Image
                                 src="/kairos-logo.svg"
                                 alt="Kairos Logo"
                                 fill
                                 className="object-contain"
                             />
-                        </div>
-                        <div>
-                            <h1 className="text-4xl font-bold tracking-tight text-white uppercase tracking-wider">
+                        </Link>
+                        <div className="flex-1 min-w-0">
+                            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white uppercase tracking-wider truncate">
                                 Habits Tracker
                             </h1>
-                            <div className="flex items-center gap-3 text-zinc-400 mt-2 text-lg font-light">
+                            <div className="flex items-center gap-2 sm:gap-3 text-zinc-400 mt-1 sm:mt-2 text-sm sm:text-base lg:text-lg font-light flex-wrap">
                                 <div className="flex items-center gap-2">
-                                    <Clock className="w-4 h-4 text-emerald-500/50" /> {timeLeft} till bedtime
+                                    <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-500/50" />
+                                    <span className="text-xs sm:text-sm">{timeLeft} till bedtime</span>
                                 </div>
                                 <Popover>
                                     <PopoverTrigger asChild>
-                                        <button className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 hover:text-white transition-all cursor-pointer flex items-center gap-1.5 group">
+                                        <button className="text-[10px] font-bold uppercase tracking-widest px-2 sm:px-3 py-1 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 hover:text-white transition-all cursor-pointer flex items-center gap-1.5 group min-h-[32px]">
                                             <Settings2 className="w-3 h-3 group-hover:rotate-90 transition-transform" />
-                                            Manage
+                                            <span className="hidden sm:inline">Manage</span>
                                         </button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-64 bg-[#0B0B0B] border-white/5 rounded-2xl p-6 shadow-2xl">
@@ -373,26 +377,54 @@ export default function HabitsPage() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <CreateHabitModal onAddHabit={handleAddHabit} />
+                    <div className="flex items-center justify-between gap-3 sm:gap-6 flex-wrap">
+                        <div className="flex items-center bg-zinc-900/50 border border-zinc-800 rounded-xl p-1 gap-1">
+                            <Link href="/dashboard">
+                                <Button variant="ghost" size="sm" className="h-9 px-3 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg gap-2 transition-all cursor-pointer">
+                                    <Home className="w-4 h-4" />
+                                    <span className="hidden md:inline">Dashboard</span>
+                                </Button>
+                            </Link>
+                            <Link href="/finance">
+                                <Button variant="ghost" size="sm" className="h-9 px-3 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg gap-2 transition-all cursor-pointer">
+                                    <Wallet className="w-4 h-4" />
+                                    <span className="hidden md:inline">Finance</span>
+                                </Button>
+                            </Link>
+                            <Link href="/habits">
+                                <Button size="sm" className="h-9 px-3 text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg gap-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer">
+                                    <CheckCircle className="w-4 h-4" />
+                                    <span className="hidden md:inline">Habits</span>
+                                </Button>
+                            </Link>
+                            <Link href="/journal">
+                                <Button variant="ghost" size="sm" className="h-9 px-3 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg gap-2 transition-all cursor-pointer">
+                                    <BookOpen className="w-4 h-4" />
+                                    <span className="hidden md:inline">Journal</span>
+                                </Button>
+                            </Link>
+                        </div>
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <CreateHabitModal onAddHabit={handleAddHabit} />
+                        </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
                     {/* Left Side: Progress & Heatmap */}
-                    <div className="lg:col-span-8 space-y-16">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-6">
+                    <div className="lg:col-span-8 space-y-8 lg:space-y-16">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div className="flex items-center gap-4 sm:gap-6">
                                 <button
                                     onClick={handlePrevWeek}
-                                    className="w-11 h-11 rounded-full border border-white/5 flex items-center justify-center hover:bg-white/5 transition-all active:scale-95 cursor-pointer"
+                                    className="min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-white/5 flex items-center justify-center hover:bg-white/5 transition-all active:scale-95 cursor-pointer flex-shrink-0"
                                 >
                                     <ChevronLeft className="w-5 h-5" />
                                 </button>
-                                <h2 className="text-2xl font-bold tracking-tight">{formatDateRange()}</h2>
+                                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight truncate">{formatDateRange()}</h2>
                                 <button
                                     onClick={handleNextWeek}
-                                    className="w-11 h-11 rounded-full border border-white/5 flex items-center justify-center hover:bg-white/5 transition-all active:scale-95 cursor-pointer"
+                                    className="min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-white/5 flex items-center justify-center hover:bg-white/5 transition-all active:scale-95 cursor-pointer flex-shrink-0"
                                 >
                                     <ChevronRight className="w-5 h-5" />
                                 </button>
@@ -401,7 +433,7 @@ export default function HabitsPage() {
                                 <button
                                     onClick={() => setViewMode('grid')}
                                     className={cn(
-                                        "p-2.5 rounded-lg transition-all cursor-pointer",
+                                        "min-w-[44px] min-h-[44px] p-2.5 rounded-lg transition-all cursor-pointer",
                                         viewMode === 'grid' ? "bg-white/5 text-white" : "text-white/20 hover:text-white"
                                     )}
                                 >
@@ -410,7 +442,7 @@ export default function HabitsPage() {
                                 <button
                                     onClick={() => setViewMode('list')}
                                     className={cn(
-                                        "p-2.5 rounded-lg transition-all cursor-pointer",
+                                        "min-w-[44px] min-h-[44px] p-2.5 rounded-lg transition-all cursor-pointer",
                                         viewMode === 'list' ? "bg-white/5 text-white" : "text-white/20 hover:text-white"
                                     )}
                                 >
@@ -444,7 +476,7 @@ export default function HabitsPage() {
                         {viewMode === 'grid' ? (
                             <HabitCalendar habits={habits} weekStart={selectedWeekStart} />
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 {habits.filter(h => !h.isDeleted).map((habit) => {
                                     const habitColor = habit.color || "#FF9F0A";
                                     const iconMap: any = { Target, Heart, Sparkles, Brain, Coffee, Music, Moon, Sun, Star, Zap, Trophy, User, Book, Dumbbell, Flower2, PenTool, Wine, Leaf, Circle };
@@ -475,30 +507,30 @@ export default function HabitsPage() {
                                     }
 
                                     return (
-                                        <div key={habit.id} className="bg-[#111111] border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all group relative overflow-hidden">
+                                        <div key={habit.id} className="bg-[#111111] border border-white/5 rounded-2xl p-4 sm:p-6 hover:border-white/10 transition-all group relative overflow-hidden">
                                             <div className="absolute top-0 left-0 w-full h-1 opacity-20" style={{ backgroundColor: habitColor }}></div>
 
-                                            <div className="flex justify-between items-start mb-6">
-                                                <div className="flex items-center gap-4">
+                                            <div className="flex justify-between items-start mb-4 sm:mb-6">
+                                                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
                                                     <div
-                                                        className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0"
+                                                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0"
                                                         style={{ color: habitColor }}
                                                     >
-                                                        <Icon className="w-6 h-6" />
+                                                        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                                                     </div>
-                                                    <div>
-                                                        <h3 className="font-bold text-white text-lg tracking-tight line-clamp-1">{habit.name}</h3>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="font-bold text-white text-base sm:text-lg tracking-tight truncate">{habit.name}</h3>
                                                         <span className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">{habit.category}</span>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-2 flex-shrink-0">
                                                     <div className="flex flex-col items-end">
-                                                        <div className="text-2xl font-black text-white/90 tracking-tighter" style={{ color: habitColor }}>{habit.streak}d</div>
+                                                        <div className="text-xl sm:text-2xl font-black text-white/90 tracking-tighter" style={{ color: habitColor }}>{habit.streak}d</div>
                                                         <span className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest">Streak</span>
                                                     </div>
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
-                                                            <button className="p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer text-white/20 hover:text-white/50 ml-1">
+                                                            <button className="min-w-[44px] min-h-[44px] p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer text-white/20 hover:text-white/50 ml-1">
                                                                 <MoreVertical className="w-4 h-4" />
                                                             </button>
                                                         </DropdownMenuTrigger>
@@ -542,7 +574,7 @@ export default function HabitsPage() {
                                                     ></div>
                                                 </div>
 
-                                                <div className="grid grid-cols-2 gap-4 pt-2">
+                                                <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2">
                                                     <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
                                                         <div className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest mb-1">Best Streak</div>
                                                         <div className="text-sm font-bold text-white/80">{habit.bestStreak} Days</div>
@@ -561,13 +593,13 @@ export default function HabitsPage() {
                     </div>
 
                     {/* Right Side: Today's Checklist */}
-                    <div className="lg:col-span-4 space-y-10">
-                        <div className="space-y-6">
+                    <div className="lg:col-span-4 space-y-8 lg:space-y-10">
+                        <div className="space-y-4 sm:space-y-6">
                             <div className="flex items-center justify-between">
-                                <h2 className="text-xl font-bold tracking-tight">Mon, Feb 18</h2>
+                                <h2 className="text-lg sm:text-xl font-bold tracking-tight">Mon, Feb 18</h2>
                                 <div className="flex gap-2">
-                                    <button className="w-9 h-9 rounded-full border border-white/5 flex items-center justify-center text-white/20 hover:text-white transition-colors cursor-pointer"><ChevronLeft className="w-4.5 h-4.5" /></button>
-                                    <button className="w-9 h-9 rounded-full border border-white/5 flex items-center justify-center text-white/20 hover:text-white transition-colors cursor-pointer"><ChevronRight className="w-4.5 h-4.5" /></button>
+                                    <button className="min-w-[44px] min-h-[44px] w-9 h-9 rounded-full border border-white/5 flex items-center justify-center text-white/20 hover:text-white transition-colors cursor-pointer"><ChevronLeft className="w-4.5 h-4.5" /></button>
+                                    <button className="min-w-[44px] min-h-[44px] w-9 h-9 rounded-full border border-white/5 flex items-center justify-center text-white/20 hover:text-white transition-colors cursor-pointer"><ChevronRight className="w-4.5 h-4.5" /></button>
                                 </div>
                             </div>
                             <div className="space-y-3">

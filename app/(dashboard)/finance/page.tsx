@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import CategoryChart from '@/components/finance/CategoryChart';
@@ -20,8 +21,18 @@ import {
     RefreshCw,
     CreditCard,
     Download,
-    Search
+    Search,
+    Home,
+    CheckCircle,
+    BookOpen
 } from 'lucide-react';
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from "@/components/ui/carousel";
 import { cn } from '@/lib/utils';
 
 interface Analytics {
@@ -147,49 +158,77 @@ export default function FinanceDashboardPage() {
                 <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-zinc-700/20 rounded-full blur-3xl opacity-20" />
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-                    <div className="flex items-center gap-6">
-                        <div className="relative w-16 h-16 shrink-0 lg:w-20 lg:h-20">
+                <div className="flex flex-col gap-4 mb-8 sm:mb-10">
+                    <div className="flex items-center gap-4 sm:gap-6">
+                        <Link href="/" className="relative w-12 h-12 shrink-0 sm:w-16 sm:h-16 lg:w-20 lg:h-20 hover:opacity-80 transition-opacity cursor-pointer">
                             <Image
                                 src="/kairos-logo.svg"
                                 alt="Kairos Logo"
                                 fill
                                 className="object-contain"
                             />
-                        </div>
-                        <div>
-                            <h1 className="text-4xl font-bold tracking-tight text-white uppercase tracking-wider">
+                        </Link>
+                        <div className="flex-1 min-w-0">
+                            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white uppercase tracking-wider truncate">
                                 Spend Tracker
                             </h1>
-                            <p className="text-zinc-400 mt-2 text-lg font-light">
+                            <p className="text-zinc-400 mt-1 sm:mt-2 text-sm sm:text-base lg:text-lg font-light truncate">
                                 Overview for {userName}
                             </p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <TransactionsModal
-                            onDeleteSuccess={fetchData}
-                            trigger={
-                                <Button variant="outline" className="w-10 h-10 p-0 border-zinc-700 hover:bg-zinc-800 text-white cursor-pointer rounded-xl">
-                                    <Search className="w-4 h-4" />
+                    <div className="flex items-center justify-between gap-3 sm:gap-6 flex-wrap">
+                        <div className="flex items-center bg-zinc-900/50 border border-zinc-800 rounded-xl p-1 gap-1">
+                            <Link href="/dashboard">
+                                <Button variant="ghost" size="sm" className="h-9 px-3 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg gap-2 transition-all cursor-pointer">
+                                    <Home className="w-4 h-4" />
+                                    <span className="hidden md:inline">Dashboard</span>
                                 </Button>
-                            }
-                        />
-                        <AddTransactionModal onSuccess={fetchData} />
-                        <Button
-                            variant="secondary"
-                            onClick={() => {
-                                setIsLoading(true);
-                                fetchData();
-                            }}
-                            disabled={isLoading}
-                            className="bg-white text-black hover:bg-zinc-200"
-                        >
-                            <RefreshCw className={cn("w-4 h-4 mr-2", isLoading && "animate-spin")} />
-                            Refresh
-                        </Button>
+                            </Link>
+                            <Link href="/finance">
+                                <Button size="sm" className="h-9 px-3 text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg gap-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer">
+                                    <Wallet className="w-4 h-4" />
+                                    <span className="hidden md:inline">Finance</span>
+                                </Button>
+                            </Link>
+                            <Link href="/habits">
+                                <Button variant="ghost" size="sm" className="h-9 px-3 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg gap-2 transition-all cursor-pointer">
+                                    <CheckCircle className="w-4 h-4" />
+                                    <span className="hidden md:inline">Habits</span>
+                                </Button>
+                            </Link>
+                            <Link href="/journal">
+                                <Button variant="ghost" size="sm" className="h-9 px-3 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg gap-2 transition-all cursor-pointer">
+                                    <BookOpen className="w-4 h-4" />
+                                    <span className="hidden md:inline">Journal</span>
+                                </Button>
+                            </Link>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <TransactionsModal
+                                onDeleteSuccess={fetchData}
+                                trigger={
+                                    <Button variant="outline" className="min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 p-0 border-zinc-700 hover:bg-zinc-800 text-white cursor-pointer rounded-xl">
+                                        <Search className="w-4 h-4" />
+                                    </Button>
+                                }
+                            />
+                            <AddTransactionModal onSuccess={fetchData} />
+                            <Button
+                                variant="secondary"
+                                onClick={() => {
+                                    setIsLoading(true);
+                                    fetchData();
+                                }}
+                                disabled={isLoading}
+                                className="min-h-[44px] bg-white text-black hover:bg-zinc-200 px-4 py-2"
+                            >
+                                <RefreshCw className={cn("w-4 h-4 sm:mr-2", isLoading && "animate-spin")} />
+                                <span className="hidden sm:inline">Refresh</span>
+                            </Button>
+                        </div>
                     </div>
                 </div>
 
@@ -200,9 +239,9 @@ export default function FinanceDashboardPage() {
                         ))}
                     </div>
                 ) : analytics ? (
-                    <div className="space-y-8">
-                        {/* Summary Cards */}
-                        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="space-y-6 sm:space-y-8">
+                        {/* Summary Cards - Carousel on Mobile, Grid on Desktop */}
+                        <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                             <Card className="bg-zinc-900/50 border-zinc-800">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium text-zinc-400">Total Income</CardTitle>
@@ -250,21 +289,79 @@ export default function FinanceDashboardPage() {
                             </Card>
                         </div>
 
+                        {/* Mobile Carousel */}
+                        <div className="block sm:hidden -mx-4 px-4 overflow-visible">
+                            <Carousel className="w-full">
+                                <CarouselContent className="-ml-2 md:-ml-4">
+                                    <CarouselItem className="pl-2 basis-[85%]">
+                                        <Card className="bg-zinc-900/50 border-zinc-800 h-full">
+                                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                                <CardTitle className="text-sm font-medium text-zinc-400">Total Income</CardTitle>
+                                                <ArrowUpRight className="h-4 w-4 text-emerald-500" />
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="text-2xl font-bold text-emerald-500 tracking-tight">{formatAmount(analytics.summary.totalIncome)}</div>
+                                                <p className="text-xs text-zinc-500 mt-1">Inflow this period</p>
+                                            </CardContent>
+                                        </Card>
+                                    </CarouselItem>
+                                    <CarouselItem className="pl-2 basis-[85%]">
+                                        <Card className="bg-zinc-900/50 border-zinc-800 h-full">
+                                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                                <CardTitle className="text-sm font-medium text-zinc-400">Total Expenses</CardTitle>
+                                                <ArrowDownRight className="h-4 w-4 text-red-500" />
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="text-2xl font-bold text-red-500 tracking-tight">{formatAmount(analytics.summary.totalExpense)}</div>
+                                                <p className="text-xs text-zinc-500 mt-1">Outflow this period</p>
+                                            </CardContent>
+                                        </Card>
+                                    </CarouselItem>
+                                    <CarouselItem className="pl-2 basis-[85%]">
+                                        <Card className="bg-zinc-900/50 border-zinc-800 h-full">
+                                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                                <CardTitle className="text-sm font-medium text-zinc-400">Net Savings</CardTitle>
+                                                <PiggyBank className="h-4 w-4 text-blue-500" />
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="text-2xl font-bold text-blue-500 tracking-tight">{formatAmount(analytics.summary.savings)}</div>
+                                                <p className="text-xs text-zinc-500 mt-1">
+                                                    {analytics.summary.totalIncome > 0 ? (analytics.summary.savings / analytics.summary.totalIncome * 100).toFixed(1) : 0}% savings rate
+                                                </p>
+                                            </CardContent>
+                                        </Card>
+                                    </CarouselItem>
+                                    <CarouselItem className="pl-2 basis-[85%]">
+                                        <Card className="bg-zinc-900/50 border-zinc-800 h-full">
+                                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                                <CardTitle className="text-sm font-medium text-zinc-400">Transactions</CardTitle>
+                                                <Activity className="h-4 w-4 text-white" />
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="text-2xl font-bold text-white tracking-tight">{analytics.summary.transactionCount}</div>
+                                                <p className="text-xs text-zinc-500 mt-1">Total items processed</p>
+                                            </CardContent>
+                                        </Card>
+                                    </CarouselItem>
+                                </CarouselContent>
+                            </Carousel>
+                        </div>
+
                         {/* Analysis & Visualization Section */}
-                        <div className="grid lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                             {/* Spending Chart */}
                             <Card className="lg:col-span-2 border-zinc-800 bg-zinc-900/30">
                                 <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 text-white">
-                                        <TrendingUp className="w-5 h-5" />
+                                    <CardTitle className="flex items-center gap-2 text-white text-base sm:text-lg">
+                                        <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
                                         Spending Breakdown
                                     </CardTitle>
-                                    <CardDescription className="text-zinc-500">
+                                    <CardDescription className="text-zinc-500 text-sm">
                                         Expenses by category
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="pl-2">
-                                    <div className="h-[300px] w-full flex items-center justify-center">
+                                    <div className="h-[200px] sm:h-[250px] lg:h-[300px] w-full flex items-center justify-center">
                                         <CategoryChart data={analytics.categoryBreakdown} />
                                     </div>
                                 </CardContent>
@@ -273,11 +370,11 @@ export default function FinanceDashboardPage() {
                             {/* Top Merchants */}
                             <Card className="border-zinc-800 bg-zinc-900/30">
                                 <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 text-white">
-                                        <CreditCard className="w-5 h-5" />
+                                    <CardTitle className="flex items-center gap-2 text-white text-base sm:text-lg">
+                                        <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
                                         Top Merchants
                                     </CardTitle>
-                                    <CardDescription className="text-zinc-500">
+                                    <CardDescription className="text-zinc-500 text-sm">
                                         Highest spending activity
                                     </CardDescription>
                                 </CardHeader>
@@ -311,10 +408,10 @@ export default function FinanceDashboardPage() {
 
                         {/* Recent Transactions */}
                         <Card className="border-zinc-800 bg-zinc-900/30">
-                            <CardHeader className="flex flex-row items-center justify-between">
+                            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div>
-                                    <CardTitle className="text-white">Recent Activity</CardTitle>
-                                    <CardDescription className="text-zinc-500">Latest transactions</CardDescription>
+                                    <CardTitle className="text-white text-base sm:text-lg">Recent Activity</CardTitle>
+                                    <CardDescription className="text-zinc-500 text-sm">Latest transactions</CardDescription>
                                 </div>
                                 <TransactionsModal onDeleteSuccess={fetchData} />
                             </CardHeader>
@@ -322,29 +419,29 @@ export default function FinanceDashboardPage() {
                                 {recentTransactions.length > 0 ? (
                                     <div className="divide-y divide-zinc-800/50">
                                         {recentTransactions.map((txn) => (
-                                            <div key={txn._id} className="flex items-center justify-between py-4 group hover:bg-zinc-900/50 px-4 -mx-4 transition-colors rounded-lg">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center border border-zinc-800">
+                                            <div key={txn._id} className="flex items-center justify-between py-3 sm:py-4 group hover:bg-zinc-900/50 px-3 sm:px-4 -mx-3 sm:-mx-4 transition-colors rounded-lg gap-3">
+                                                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                                                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-900 flex items-center justify-center border border-zinc-800 flex-shrink-0">
                                                         {txn.type === 'credit' ? (
                                                             <ArrowDownRight className="w-4 h-4 text-white" />
                                                         ) : (
                                                             <ArrowUpRight className="w-4 h-4 text-zinc-500" />
                                                         )}
                                                     </div>
-                                                    <div>
-                                                        <p className="font-medium text-zinc-200 group-hover:text-white transition-colors">
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="font-medium text-zinc-200 group-hover:text-white transition-colors text-sm sm:text-base truncate">
                                                             {txn.merchant}
                                                         </p>
-                                                        <div className="flex items-center gap-2 text-xs text-zinc-500">
-                                                            <span className="capitalize px-1.5 py-0.5 rounded border border-zinc-800 bg-zinc-900">{txn.category}</span>
-                                                            <span>•</span>
-                                                            <span>{new Date(txn.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                                        <div className="flex items-center gap-2 text-xs text-zinc-500 flex-wrap">
+                                                            <span className="capitalize px-1.5 py-0.5 rounded border border-zinc-800 bg-zinc-900 whitespace-nowrap">{txn.category}</span>
+                                                            <span className="hidden sm:inline">•</span>
+                                                            <span className="hidden sm:inline">{new Date(txn.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="text-right">
+                                                <div className="text-right flex-shrink-0">
                                                     <p className={cn(
-                                                        "font-semibold",
+                                                        "font-semibold text-sm sm:text-base whitespace-nowrap",
                                                         txn.type === 'credit' ? "text-white" : "text-zinc-400"
                                                     )}>
                                                         {txn.type === 'credit' ? '+' : '-'}{formatAmount(txn.amount)}
