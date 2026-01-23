@@ -133,22 +133,11 @@ export default function FinanceDashboardPage() {
         }
     };
 
-    if (!isLoaded || !user) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-[#0b0b0b]">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                    <p className="text-zinc-500 text-sm animate-pulse">Loading...</p>
-                </div>
-            </div>
-        );
-    }
-
     const formatAmount = (amount: number) => {
         return `₹${amount.toLocaleString('en-IN')}`;
     };
 
-    const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+    const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
 
     return (
         <div className="min-h-screen bg-[#0b0b0b] text-white pb-20">
@@ -210,20 +199,21 @@ export default function FinanceDashboardPage() {
                             <TransactionsModal
                                 onDeleteSuccess={fetchData}
                                 trigger={
-                                    <Button variant="outline" className="min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 p-0 border-zinc-700 hover:bg-zinc-800 text-white cursor-pointer rounded-xl">
+                                    <Button variant="outline" size="lg" className="w-11 p-0 border-zinc-700 hover:bg-zinc-800 text-white cursor-pointer rounded-xl">
                                         <Search className="w-4 h-4" />
                                     </Button>
                                 }
                             />
                             <AddTransactionModal onSuccess={fetchData} />
                             <Button
-                                variant="secondary"
+                                variant="default"
+                                size="lg"
                                 onClick={() => {
                                     setIsLoading(true);
                                     fetchData();
                                 }}
                                 disabled={isLoading}
-                                className="min-h-[44px] bg-white text-black hover:bg-zinc-200 px-4 py-2"
+                                className="px-4 rounded-xl"
                             >
                                 <RefreshCw className={cn("w-4 h-4 sm:mr-2", isLoading && "animate-spin")} />
                                 <span className="hidden sm:inline">Refresh</span>
@@ -362,7 +352,11 @@ export default function FinanceDashboardPage() {
                                 </CardHeader>
                                 <CardContent className="pl-2">
                                     <div className="h-[200px] sm:h-[250px] lg:h-[300px] w-full flex items-center justify-center">
-                                        <CategoryChart data={analytics.categoryBreakdown} />
+                                        {isLoading || !analytics ? (
+                                            <div className="w-full h-full bg-zinc-900/50 rounded-xl animate-pulse" />
+                                        ) : (
+                                            <CategoryChart data={analytics.categoryBreakdown} />
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -380,26 +374,43 @@ export default function FinanceDashboardPage() {
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-4">
-                                        {analytics.topMerchants.slice(0, 5).map((merchant, i) => (
-                                            <div key={merchant.merchant} className="flex items-center justify-between group">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-medium text-white group-hover:bg-white group-hover:text-black transition-colors">
-                                                        {i + 1}
+                                        {isLoading || !analytics ? (
+                                            [...Array(5)].map((_, i) => (
+                                                <div key={i} className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-full bg-zinc-800 animate-pulse" />
+                                                        <div className="space-y-2">
+                                                            <div className="h-3 w-20 bg-zinc-800 animate-pulse rounded" />
+                                                            <div className="h-2 w-12 bg-zinc-800 animate-pulse rounded" />
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium text-zinc-200 group-hover:text-white transition-colors">{merchant.merchant}</p>
-                                                        <p className="text-xs text-zinc-500">{merchant.count} txns</p>
+                                                    <div className="h-3 w-16 bg-zinc-800 animate-pulse rounded" />
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <>
+                                                {analytics.topMerchants.slice(0, 5).map((merchant, i) => (
+                                                    <div key={merchant.merchant} className="flex items-center justify-between group">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-medium text-white group-hover:bg-white group-hover:text-black transition-colors">
+                                                                {i + 1}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-medium text-zinc-200 group-hover:text-white transition-colors">{merchant.merchant}</p>
+                                                                <p className="text-xs text-zinc-500">{merchant.count} txns</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <p className="text-sm font-medium text-white">{formatAmount(merchant.amount)}</p>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-sm font-medium text-white">{formatAmount(merchant.amount)}</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                        {analytics.topMerchants.length === 0 && (
-                                            <div className="text-center py-8 text-zinc-500 text-sm">
-                                                No merchant data available
-                                            </div>
+                                                ))}
+                                                {analytics.topMerchants.length === 0 && (
+                                                    <div className="text-center py-8 text-zinc-500 text-sm">
+                                                        No merchant data available
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 </CardContent>
@@ -416,7 +427,25 @@ export default function FinanceDashboardPage() {
                                 <TransactionsModal onDeleteSuccess={fetchData} />
                             </CardHeader>
                             <CardContent>
-                                {recentTransactions.length > 0 ? (
+                                {isLoading ? (
+                                    <div className="space-y-4">
+                                        {[...Array(5)].map((_, i) => (
+                                            <div key={i} className="flex items-center justify-between py-4 gap-3">
+                                                <div className="flex items-center gap-4 flex-1">
+                                                    <div className="w-10 h-10 rounded-full bg-zinc-900 animate-pulse border border-zinc-800" />
+                                                    <div className="space-y-2 flex-1">
+                                                        <div className="h-4 w-1/3 bg-zinc-900 animate-pulse rounded" />
+                                                        <div className="h-3 w-1/4 bg-zinc-900 animate-pulse rounded" />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2 text-right">
+                                                    <div className="h-4 w-20 bg-zinc-900 animate-pulse rounded ml-auto" />
+                                                    <div className="h-3 w-12 bg-zinc-900 animate-pulse rounded ml-auto" />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : recentTransactions.length > 0 ? (
                                     <div className="divide-y divide-zinc-800/50">
                                         {recentTransactions.map((txn) => (
                                             <div key={txn._id} className="flex items-center justify-between py-3 sm:py-4 group hover:bg-zinc-900/50 px-3 sm:px-4 -mx-3 sm:-mx-4 transition-colors rounded-lg gap-3">

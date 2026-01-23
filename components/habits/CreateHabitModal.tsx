@@ -166,8 +166,8 @@ export function CreateHabitModal({ onAddHabit }: CreateHabitModalProps) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="rounded-full bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold h-12 px-6 hover:brightness-110 transition-all shadow-lg shadow-emerald-500/20 group cursor-pointer">
-                    <Plus className="w-5 h-5 mr-2" />
+                <Button variant="outline" className="h-11 px-6 border-zinc-700 hover:bg-zinc-800 text-white hover:text-white uppercase text-[11px] font-bold tracking-widest cursor-pointer rounded-xl transition-all group shadow-none">
+                    <Plus className="w-4 h-4 mr-2" />
                     Create Habit
                 </Button>
             </DialogTrigger>

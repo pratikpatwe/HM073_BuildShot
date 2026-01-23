@@ -142,7 +142,6 @@ export default function UnifiedChatbot({
             className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/30 flex items-center justify-center cursor-pointer group"
         >
             <ChatBubbleBottomCenterTextIcon className="h-6 w-6 text-black group-hover:rotate-12 transition-transform" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
         </motion.button>
     )
 
@@ -179,14 +178,7 @@ export default function UnifiedChatbot({
                                 Previous Session
                             </button>
                         </div>
-                        <div className="pt-4 border-t border-white/5 space-y-1">
-                            <button className="flex items-center gap-3 w-full p-2.5 rounded-lg hover:bg-white/5 text-white/80 text-sm">
-                                <div className="w-6 h-6 rounded-md bg-emerald-500/20 flex items-center justify-center">
-                                    <User className="h-3 h-3 text-emerald-400" />
-                                </div>
-                                My Account
-                            </button>
-                        </div>
+
                     </div>
 
                     {/* Main Chat Area */}
@@ -312,15 +304,8 @@ export default function UnifiedChatbot({
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-white/5 bg-gradient-to-r from-emerald-500/10 to-transparent">
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-[#0d0d0d] border border-emerald-500/20 flex items-center justify-center shadow-lg shadow-emerald-500/20 overflow-hidden p-1.5">
-                            <img src="/kairos-logo.svg" alt="Kairos Logo" className="w-full h-full object-contain" />
-                        </div>
                         <div>
                             <h3 className="text-white font-semibold text-sm">Kairos AI</h3>
-                            <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                                <span className="text-emerald-400 text-xs">Online</span>
-                            </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-1">
