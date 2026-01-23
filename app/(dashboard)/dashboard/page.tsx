@@ -666,6 +666,7 @@ export default function GamifiedDashboard() {
             </main>
 
 
+
             <style jsx global>{`
                 @keyframes shimmer {
                     0% { transform: translateX(-100%); }
