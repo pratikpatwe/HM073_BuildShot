@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
+import { X, Send, Bot, User } from 'lucide-react';
+import { ChatBubbleBottomCenterTextIcon } from '@heroicons/react/24/solid';
 import { createClient } from '@/lib/supabase/client';
 
 interface Message {
@@ -96,7 +97,7 @@ export default function Chatbot() {
                     className="fixed bottom-6 right-6 p-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-50 group cursor-pointer"
                     aria-label="Open Financial Assistant"
                 >
-                    <MessageCircle size={24} className="group-hover:scale-110 transition-transform" />
+                    <ChatBubbleBottomCenterTextIcon className="w-6 h-6 group-hover:scale-110 transition-transform" />
                 </button>
             )}
 
