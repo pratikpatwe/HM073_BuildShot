@@ -5,7 +5,7 @@ import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { toast } from "sonner"
-import { Toaster } from "@/components/ui/sonner"
+
 import { AuthCard } from "@/components/auth/auth-card"
 import { createClient } from "@/lib/supabase/client"
 
@@ -269,7 +269,7 @@ function OnboardingContent() {
                 activeTab={activeTab}
                 setActiveTab={handleTabChange}
             />
-            <Toaster position="top-right" theme="dark" closeButton />
+
         </div>
     )
 }

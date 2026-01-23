@@ -541,60 +541,56 @@ export default function JournalPage() {
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
                         <div className="bg-[#111111] border border-zinc-800 rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
                             {/* Modal Header */}
-                            <div className="p-6 sm:p-8 border-b border-zinc-800 flex items-start justify-between gap-4 shrink-0">
-                                <div className="flex-1 min-w-0">
-                                    {isEditingJournal ? (
-                                        <div className="space-y-1">
+                            <div className="p-6 border-b border-zinc-800 shrink-0">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex-1 min-w-0">
+                                        {isEditingJournal ? (
                                             <input
                                                 type="text"
                                                 value={editTitle}
                                                 onChange={(e) => setEditTitle(e.target.value)}
                                                 placeholder="Journal Title"
-                                                className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-xl font-bold text-white focus:outline-none focus:border-emerald-500 transition-colors"
+                                                className="w-full bg-zinc-900 border border-zinc-700 rounded-xl h-11 px-4 text-lg font-bold text-white focus:outline-none focus:border-emerald-500 transition-colors"
                                             />
-                                            <div className="flex items-center gap-2 text-zinc-500 text-sm pl-1">
-                                                <Clock className="w-4 h-4" />
-                                                {formatDate(selectedJournal.createdAt)} (Created Date)
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <h2 className="text-xl sm:text-2xl font-bold text-white mb-2 truncate">
+                                        ) : (
+                                            <h2 className="text-xl sm:text-2xl font-bold text-white truncate">
                                                 {selectedJournal.title}
                                             </h2>
-                                            <div className="flex items-center gap-2 text-zinc-500 text-sm">
-                                                <Clock className="w-4 h-4" />
-                                                {formatDate(selectedJournal.createdAt)}
-                                            </div>
-                                        </>
-                                    )}
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {!isEditingJournal && (
+                                            <>
+                                                <button
+                                                    onClick={() => startEditing(selectedJournal)}
+                                                    className="h-11 px-5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteJournal(selectedJournal.id)}
+                                                    className="h-11 px-5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs font-bold uppercase tracking-widest text-red-500 hover:bg-red-500/20 transition-colors cursor-pointer"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </>
+                                        )}
+                                        <button
+                                            onClick={() => {
+                                                setSelectedJournal(null);
+                                                setIsEditingJournal(false);
+                                            }}
+                                            className="w-11 h-11 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    {!isEditingJournal && (
-                                        <>
-                                            <button
-                                                onClick={() => startEditing(selectedJournal)}
-                                                className="h-10 px-4 rounded-xl bg-zinc-900 border border-zinc-800 text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteJournal(selectedJournal.id)}
-                                                className="h-10 px-4 rounded-xl bg-red-500/10 border border-red-500/20 text-sm font-medium text-red-500 hover:bg-red-500/20 transition-colors cursor-pointer"
-                                            >
-                                                Delete
-                                            </button>
-                                        </>
-                                    )}
-                                    <button
-                                        onClick={() => {
-                                            setSelectedJournal(null);
-                                            setIsEditingJournal(false);
-                                        }}
-                                        className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
-                                    >
-                                        <X className="w-5 h-5" />
-                                    </button>
+                                <div className="flex items-center gap-2 text-zinc-500 mt-3 pl-1">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    <span className="text-[10px] uppercase font-bold tracking-widest">
+                                        {formatDate(selectedJournal.createdAt)}
+                                    </span>
                                 </div>
                             </div>
 
