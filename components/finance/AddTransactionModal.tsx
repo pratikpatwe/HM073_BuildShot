@@ -177,7 +177,7 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {trigger || (
-                    <Button variant="outline" className="gap-2 border-zinc-700 hover:bg-zinc-800 text-white hover:text-white uppercase text-[11px] font-bold tracking-widest cursor-pointer">
+                    <Button variant="outline" size="lg" className="gap-2 px-4 border-zinc-700 hover:bg-zinc-800 text-white hover:text-white uppercase text-[11px] font-bold tracking-widest cursor-pointer rounded-xl">
                         <Plus className="w-4 h-4" />
                         Add
                     </Button>

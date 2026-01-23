@@ -318,16 +318,6 @@ export default function HabitsPage() {
 
     if (!mounted) return null;
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-[#0B0B0B] flex items-center justify-center">
-                <div className="space-y-4 text-center">
-                    <div className="w-12 h-12 rounded-full border-t-2 border-emerald-500 animate-spin mx-auto"></div>
-                    <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest animate-pulse">Loading Habits...</p>
-                </div>
-            </div>
-        );
-    }
     return (
         <div className="min-h-screen bg-[#0B0B0B] text-white pb-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
@@ -474,120 +464,130 @@ export default function HabitsPage() {
                         </div>
 
                         {viewMode === 'grid' ? (
-                            <HabitCalendar habits={habits} weekStart={selectedWeekStart} />
+                            loading ? (
+                                <div className="w-full aspect-[2/1] bg-white/[0.02] border border-white/5 rounded-3xl animate-pulse" />
+                            ) : (
+                                <HabitCalendar habits={habits} weekStart={selectedWeekStart} />
+                            )
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                {habits.filter(h => !h.isDeleted).map((habit) => {
-                                    const habitColor = habit.color || "#FF9F0A";
-                                    const iconMap: any = { Target, Heart, Sparkles, Brain, Coffee, Music, Moon, Sun, Star, Zap, Trophy, User, Book, Dumbbell, Flower2, PenTool, Wine, Leaf, Circle };
-                                    const Icon = habit.iconName ? (iconMap[habit.iconName] || Target) : Target;
+                                {loading ? (
+                                    [...Array(4)].map((_, i) => (
+                                        <div key={i} className="h-48 bg-[#111111] border border-white/5 rounded-2xl animate-pulse" />
+                                    ))
+                                ) : (
+                                    habits.filter(h => !h.isDeleted).map((habit) => {
+                                        const habitColor = habit.color || "#FF9F0A";
+                                        const iconMap: any = { Target, Heart, Sparkles, Brain, Coffee, Music, Moon, Sun, Star, Zap, Trophy, User, Book, Dumbbell, Flower2, PenTool, Wine, Leaf, Circle };
+                                        const Icon = habit.iconName ? (iconMap[habit.iconName] || Target) : Target;
 
-                                    // Calculate Monthly Consistency accurately
-                                    const now = new Date();
-                                    now.setHours(0, 0, 0, 0);
-                                    let totalScheduledInMonth = 0;
-                                    for (let i = 0; i < 30; i++) {
-                                        const d = new Date(now);
-                                        d.setDate(now.getDate() - i);
-                                        const dayId = d.getDay(); // 0=Sun, 1=Mon...
-                                        const isScheduled = habit.type === 'Custom' && habit.customDays
-                                            ? habit.customDays.includes(dayId)
-                                            : true;
-                                        if (isScheduled) totalScheduledInMonth++;
-                                    }
+                                        // Calculate Monthly Consistency accurately
+                                        const now = new Date();
+                                        now.setHours(0, 0, 0, 0);
+                                        let totalScheduledInMonth = 0;
+                                        for (let i = 0; i < 30; i++) {
+                                            const d = new Date(now);
+                                            d.setDate(now.getDate() - i);
+                                            const dayId = d.getDay(); // 0=Sun, 1=Mon...
+                                            const isScheduled = habit.type === 'Custom' && habit.customDays
+                                                ? habit.customDays.includes(dayId)
+                                                : true;
+                                            if (isScheduled) totalScheduledInMonth++;
+                                        }
 
-                                    const completedInMonth = habit.weeklyLogs?.filter(l => l.status === 'done').length || 0;
-                                    const consistency = totalScheduledInMonth > 0 ? Math.round((completedInMonth / totalScheduledInMonth) * 100) : 0;
+                                        const completedInMonth = habit.weeklyLogs?.filter(l => l.status === 'done').length || 0;
+                                        const consistency = totalScheduledInMonth > 0 ? Math.round((completedInMonth / totalScheduledInMonth) * 100) : 0;
 
-                                    const getFrequencyText = () => {
-                                        if (habit.type !== 'Custom' || !habit.customDays || habit.customDays.length === 0) return habit.type;
-                                        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-                                        const scheduled = habit.customDays.map(d => days[d]).join(", ");
-                                        return `Custom (${scheduled})`;
-                                    }
+                                        const getFrequencyText = () => {
+                                            if (habit.type !== 'Custom' || !habit.customDays || habit.customDays.length === 0) return habit.type;
+                                            const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                                            const scheduled = habit.customDays.map(d => days[d]).join(", ");
+                                            return `Custom (${scheduled})`;
+                                        }
 
-                                    return (
-                                        <div key={habit.id} className="bg-[#111111] border border-white/5 rounded-2xl p-4 sm:p-6 hover:border-white/10 transition-all group relative overflow-hidden">
-                                            <div className="absolute top-0 left-0 w-full h-1 opacity-20" style={{ backgroundColor: habitColor }}></div>
+                                        return (
+                                            <div key={habit.id} className="bg-[#111111] border border-white/5 rounded-2xl p-4 sm:p-6 hover:border-white/10 transition-all group relative overflow-hidden">
+                                                <div className="absolute top-0 left-0 w-full h-1 opacity-20" style={{ backgroundColor: habitColor }}></div>
 
-                                            <div className="flex justify-between items-start mb-4 sm:mb-6">
-                                                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                                                    <div
-                                                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0"
-                                                        style={{ color: habitColor }}
-                                                    >
-                                                        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                                                <div className="flex justify-between items-start mb-4 sm:mb-6">
+                                                    <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                                                        <div
+                                                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0"
+                                                            style={{ color: habitColor }}
+                                                        >
+                                                            <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <h3 className="font-bold text-white text-base sm:text-lg tracking-tight truncate">{habit.name}</h3>
+                                                            <span className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">{habit.category}</span>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <h3 className="font-bold text-white text-base sm:text-lg tracking-tight truncate">{habit.name}</h3>
-                                                        <span className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">{habit.category}</span>
+                                                    <div className="flex items-center gap-2 flex-shrink-0">
+                                                        <div className="flex flex-col items-end">
+                                                            <div className="text-xl sm:text-2xl font-black text-white/90 tracking-tighter" style={{ color: habitColor }}>{habit.streak}d</div>
+                                                            <span className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest">Streak</span>
+                                                        </div>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <button className="min-w-[44px] min-h-[44px] p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer text-white/20 hover:text-white/50 ml-1">
+                                                                    <MoreVertical className="w-4 h-4" />
+                                                                </button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end" className="w-48 bg-[#161616] border-white/5 text-white/90">
+                                                                <DropdownMenuItem
+                                                                    onClick={() => {
+                                                                        setEditingHabit(habit)
+                                                                        setIsUpdateModalOpen(true)
+                                                                    }}
+                                                                    className="gap-2 cursor-pointer focus:bg-white/5 focus:text-white"
+                                                                >
+                                                                    <Settings className="w-4 h-4" />
+                                                                    <span>Update Frequency</span>
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuSeparator className="bg-white/5" />
+                                                                <DropdownMenuItem
+                                                                    onClick={() => handleDeleteHabit(habit.id)}
+                                                                    className="gap-2 cursor-pointer focus:bg-red-500/10 focus:text-red-500 text-red-500/70"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                    <span>Delete Habit</span>
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-2 flex-shrink-0">
-                                                    <div className="flex flex-col items-end">
-                                                        <div className="text-xl sm:text-2xl font-black text-white/90 tracking-tighter" style={{ color: habitColor }}>{habit.streak}d</div>
-                                                        <span className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest">Streak</span>
+
+                                                <div className="space-y-4">
+                                                    <div className="flex justify-between items-center text-[11px] font-bold">
+                                                        <span className="text-zinc-500 uppercase tracking-widest">Monthly Consistency</span>
+                                                        <span style={{ color: habitColor }}>{consistency}%</span>
                                                     </div>
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <button className="min-w-[44px] min-h-[44px] p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer text-white/20 hover:text-white/50 ml-1">
-                                                                <MoreVertical className="w-4 h-4" />
-                                                            </button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end" className="w-48 bg-[#161616] border-white/5 text-white/90">
-                                                            <DropdownMenuItem
-                                                                onClick={() => {
-                                                                    setEditingHabit(habit)
-                                                                    setIsUpdateModalOpen(true)
-                                                                }}
-                                                                className="gap-2 cursor-pointer focus:bg-white/5 focus:text-white"
-                                                            >
-                                                                <Settings className="w-4 h-4" />
-                                                                <span>Update Frequency</span>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuSeparator className="bg-white/5" />
-                                                            <DropdownMenuItem
-                                                                onClick={() => handleDeleteHabit(habit.id)}
-                                                                className="gap-2 cursor-pointer focus:bg-red-500/10 focus:text-red-500 text-red-500/70"
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
-                                                                <span>Delete Habit</span>
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
+                                                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                                        <div
+                                                            className="h-full rounded-full transition-all duration-1000"
+                                                            style={{
+                                                                width: `${consistency}%`,
+                                                                backgroundColor: habitColor,
+                                                                boxShadow: `0 0 10px ${habitColor}44`
+                                                            }}
+                                                        ></div>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2">
+                                                        <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
+                                                            <div className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest mb-1">Best Streak</div>
+                                                            <div className="text-sm font-bold text-white/80">{habit.bestStreak} Days</div>
+                                                        </div>
+                                                        <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
+                                                            <div className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest mb-1">Frequency</div>
+                                                            <div className="text-[10px] font-bold text-white/80 truncate" title={getFrequencyText()}>{getFrequencyText()}</div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-
-                                            <div className="space-y-4">
-                                                <div className="flex justify-between items-center text-[11px] font-bold">
-                                                    <span className="text-zinc-500 uppercase tracking-widest">Monthly Consistency</span>
-                                                    <span style={{ color: habitColor }}>{consistency}%</span>
-                                                </div>
-                                                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                                    <div
-                                                        className="h-full rounded-full transition-all duration-1000"
-                                                        style={{
-                                                            width: `${consistency}%`,
-                                                            backgroundColor: habitColor,
-                                                            boxShadow: `0 0 10px ${habitColor}44`
-                                                        }}
-                                                    ></div>
-                                                </div>
-
-                                                <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2">
-                                                    <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
-                                                        <div className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest mb-1">Best Streak</div>
-                                                        <div className="text-sm font-bold text-white/80">{habit.bestStreak} Days</div>
-                                                    </div>
-                                                    <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
-                                                        <div className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest mb-1">Frequency</div>
-                                                        <div className="text-[10px] font-bold text-white/80 truncate" title={getFrequencyText()}>{getFrequencyText()}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })
+                                )}
                             </div>
                         )}
                     </div>
@@ -619,18 +619,24 @@ export default function HabitsPage() {
                         </div>
 
                         <div className="space-y-5">
-                            {habits.filter(h => !h.isDeleted).map((habit) => (
-                                <HabitCard
-                                    key={habit.id}
-                                    habit={habit}
-                                    onStatusChange={handleStatusChange}
-                                    onDelete={handleDeleteHabit}
-                                    onUpdateFrequency={(h) => {
-                                        setEditingHabit(h)
-                                        setIsUpdateModalOpen(true)
-                                    }}
-                                />
-                            ))}
+                            {loading ? (
+                                [...Array(3)].map((_, i) => (
+                                    <div key={i} className="h-24 bg-white/[0.02] border border-white/5 rounded-2xl animate-pulse" />
+                                ))
+                            ) : (
+                                habits.filter(h => !h.isDeleted).map((habit) => (
+                                    <HabitCard
+                                        key={habit.id}
+                                        habit={habit}
+                                        onStatusChange={handleStatusChange}
+                                        onDelete={handleDeleteHabit}
+                                        onUpdateFrequency={(h) => {
+                                            setEditingHabit(h)
+                                            setIsUpdateModalOpen(true)
+                                        }}
+                                    />
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>
@@ -643,5 +649,5 @@ export default function HabitsPage() {
                 onUpdate={handleUpdateFrequency}
             />
         </div>
-    )
+    );
 }
