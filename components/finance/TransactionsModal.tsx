@@ -11,6 +11,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import TransactionList from '@/components/finance/TransactionList';
+import { DateRangePicker } from '@/components/finance/DateRangePicker';
 import { cn } from '@/lib/utils';
 
 const CATEGORIES = ['All', 'Food', 'Travel', 'Shopping', 'Entertainment', 'Bills', 'Health', 'Education', 'Rent', 'Salary', 'Investment', 'Transfer', 'Other'];
@@ -36,12 +37,13 @@ export function TransactionsModal({ onDeleteSuccess, trigger }: TransactionsModa
     const [type, setType] = useState<'all' | 'credit' | 'debit'>('all');
     const [search, setSearch] = useState('');
     const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
+    const [dateRange, setDateRange] = useState<{ period: string; from?: Date; to?: Date }>({ period: 'all' });
 
     useEffect(() => {
         if (open) {
             fetchTransactions();
         }
-    }, [open, pagination.page, category, type, search, sortOrder]);
+    }, [open, pagination.page, category, type, search, sortOrder, dateRange]);
 
     const fetchTransactions = async () => {
         setIsLoading(true);
@@ -56,6 +58,13 @@ export function TransactionsModal({ onDeleteSuccess, trigger }: TransactionsModa
             if (category !== 'All') params.append('category', category);
             if (type !== 'all') params.append('type', type);
             if (search) params.append('search', search);
+
+            if (dateRange.period === 'custom' && dateRange.from) {
+                params.append('startDate', dateRange.from.toISOString());
+                if (dateRange.to) params.append('endDate', dateRange.to.toISOString());
+            } else if (dateRange.period && dateRange.period !== 'all') {
+                params.append('period', dateRange.period);
+            }
 
             const response = await fetch(`/api/finance/transactions?${params}`);
 
@@ -120,7 +129,7 @@ export function TransactionsModal({ onDeleteSuccess, trigger }: TransactionsModa
                     </DialogHeader>
 
                     {/* Filters Bar */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 mb-6">
                         <div className="relative group">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-white transition-colors" />
                             <input
@@ -128,11 +137,11 @@ export function TransactionsModal({ onDeleteSuccess, trigger }: TransactionsModa
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Search merchant..."
-                                className="w-full pl-9 pr-4 py-2.5 bg-white/[0.03] border border-white/5 rounded-xl text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20 transition-all"
+                                className="w-full pl-9 pr-4 py-2 bg-white/[0.03] border border-white/5 rounded-xl text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20 transition-all h-10"
                             />
                         </div>
 
-                        <div className="flex items-center gap-2 px-3 py-2.5 bg-white/[0.03] border border-white/5 rounded-xl">
+                        <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/5 rounded-xl h-10">
                             <Filter className="w-4 h-4 text-zinc-500" />
                             <select
                                 value={category}
@@ -145,7 +154,7 @@ export function TransactionsModal({ onDeleteSuccess, trigger }: TransactionsModa
                             </select>
                         </div>
 
-                        <div className="flex items-center gap-2 px-3 py-2.5 bg-white/[0.03] border border-white/5 rounded-xl">
+                        <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/5 rounded-xl h-10">
                             <ArrowUpDown className="w-4 h-4 text-zinc-500" />
                             <select
                                 value={type}
@@ -158,7 +167,7 @@ export function TransactionsModal({ onDeleteSuccess, trigger }: TransactionsModa
                             </select>
                         </div>
 
-                        <div className="flex items-center gap-2 px-3 py-2.5 bg-white/[0.03] border border-white/5 rounded-xl">
+                        <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/5 rounded-xl h-10">
                             <ArrowUpDown className="w-4 h-4 text-zinc-500" />
                             <select
                                 value={sortOrder}
@@ -169,6 +178,11 @@ export function TransactionsModal({ onDeleteSuccess, trigger }: TransactionsModa
                                 <option value="asc" className="bg-[#0b0b0b]">Oldest First</option>
                             </select>
                         </div>
+
+                        <DateRangePicker
+                            onRangeChange={(range) => setDateRange(range)}
+                            className="bg-white/[0.03] border border-white/5 rounded-xl text-white text-sm"
+                        />
                     </div>
 
                     {/* Transaction List Area */}

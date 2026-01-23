@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import CategoryChart from '@/components/finance/CategoryChart';
 import { AddTransactionModal } from '@/components/finance/AddTransactionModal';
 import { TransactionsModal } from '@/components/finance/TransactionsModal';
+import { DateRangePicker } from '@/components/finance/DateRangePicker';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/finance/ui/card';
 import { Button } from '@/components/finance/ui/button';
 import {
@@ -73,6 +74,8 @@ export default function FinanceDashboardPage() {
     const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const [dateRange, setDateRange] = useState<{ period: string; from?: Date; to?: Date }>({ period: 'month' });
+
     useEffect(() => {
         supabase.auth.getUser().then(({ data: { user } }) => {
             if (user) {
@@ -88,7 +91,7 @@ export default function FinanceDashboardPage() {
         if (user) {
             fetchData();
         }
-    }, [user]);
+    }, [user, dateRange]);
 
     // Refetch data when page becomes visible
     useEffect(() => {
@@ -115,13 +118,26 @@ export default function FinanceDashboardPage() {
 
     const fetchData = async () => {
         try {
-            const analyticsRes = await fetch('/api/finance/analytics?period=all');
+            let params = new URLSearchParams();
+            if (dateRange.period === 'custom' && dateRange.from) {
+                params.append('startDate', dateRange.from.toISOString());
+                if (dateRange.to) params.append('endDate', dateRange.to.toISOString());
+            } else {
+                params.append('period', dateRange.period);
+            }
+
+            const analyticsRes = await fetch(`/api/finance/analytics?${params.toString()}`);
             if (analyticsRes.ok) {
                 const data = await analyticsRes.json();
                 setAnalytics(data);
             }
 
-            const txnRes = await fetch('/api/finance/transactions?limit=5&sortBy=date&sortOrder=desc');
+            const txnParams = new URLSearchParams(params);
+            txnParams.append('limit', '5');
+            txnParams.append('sortBy', 'date');
+            txnParams.append('sortOrder', 'desc');
+
+            const txnRes = await fetch(`/api/finance/transactions?${txnParams.toString()}`);
             if (txnRes.ok) {
                 const data = await txnRes.json();
                 setRecentTransactions(data.transactions);
@@ -205,6 +221,7 @@ export default function FinanceDashboardPage() {
                                 }
                             />
                             <AddTransactionModal onSuccess={fetchData} />
+                            <DateRangePicker onRangeChange={(range) => setDateRange(range)} className="w-full sm:w-auto" />
                             <Button
                                 variant="default"
                                 size="lg"
@@ -213,7 +230,7 @@ export default function FinanceDashboardPage() {
                                     fetchData();
                                 }}
                                 disabled={isLoading}
-                                className="px-4 rounded-xl"
+                                className="px-4 h-10 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-800 text-white"
                             >
                                 <RefreshCw className={cn("w-4 h-4 sm:mr-2", isLoading && "animate-spin")} />
                                 <span className="hidden sm:inline">Refresh</span>
