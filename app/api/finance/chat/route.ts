@@ -23,8 +23,7 @@ export async function POST(req: NextRequest) {
             const userId = userPayload?.userId;
 
             if (userId) {
-                // Determine user name (Default to 'User' as we used Clerk)
-                // In a real app we would sync Clerk profile to DB or use currentUser() 
+                // Determine user name
                 userContext.name = "User";
 
                 // Fetch User's accounts to get current balance
@@ -86,8 +85,8 @@ ${transactionContext}
 **User Question:** ${message}
 `;
 
-        const result = await ai.models.generateContent({
-            model: "gemini-3-flash-preview",
+        const result = await (ai as any).models.generateContent({
+            model: "gemini-1.5-flash",
             contents: systemPrompt
         });
         const responseText = result.text || "I'm sorry, I couldn't generate a response at this time.";
