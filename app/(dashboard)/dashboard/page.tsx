@@ -14,7 +14,6 @@ import {
     TrendingUp, Trophy, Wallet, Zap, TrendingDown
 } from "lucide-react"
 import DashboardNav from "@/components/dashboard/dashboard-nav"
-import AIChatbot from "@/components/dashboard/ai-chatbot"
 import StarBorder from "@/components/StarBorder"
 
 interface Achievement {
@@ -666,7 +665,7 @@ export default function GamifiedDashboard() {
                 </div>
             </main>
 
-            <AIChatbot />
+
 
             <style jsx global>{`
                 @keyframes shimmer {
