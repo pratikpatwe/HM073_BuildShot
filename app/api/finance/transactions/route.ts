@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
             merchant: body.merchant || body.description,
             rawDescription: body.description,
             category: body.category || 'Other',
-            channel: 'manual',
+            channel: 'Manual',
             tags: [],
         });
 
