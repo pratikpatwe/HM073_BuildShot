@@ -21,9 +21,26 @@ export async function GET(request: NextRequest) {
         const category = searchParams.get('category');
         const type = searchParams.get('type');
         const search = searchParams.get('search');
+        const period = searchParams.get('period');
+        const startDateParam = searchParams.get('startDate');
+        const endDateParam = searchParams.get('endDate');
 
         // Build query
         const query: any = { userId: payload.userId };
+
+        // Handle date range
+        if (startDateParam || endDateParam) {
+            query.date = {};
+            if (startDateParam) query.date.$gte = new Date(startDateParam);
+            if (endDateParam) query.date.$lte = new Date(endDateParam);
+        } else if (period && period !== 'all') {
+            const now = new Date();
+            let startDate = new Date();
+            if (period === 'week') startDate.setDate(now.getDate() - 7);
+            else if (period === 'month') startDate.setMonth(now.getMonth() - 1);
+            else if (period === 'year') startDate.setFullYear(now.getFullYear() - 1);
+            query.date = { $gte: startDate };
+        }
 
         if (category && category !== 'All') {
             query.category = category;

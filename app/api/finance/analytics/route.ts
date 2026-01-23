@@ -11,19 +11,31 @@ export async function GET(request: NextRequest) {
 
         const { searchParams } = new URL(request.url);
         const period = searchParams.get('period') || 'month';
+        const customStart = searchParams.get('startDate');
+        const customEnd = searchParams.get('endDate');
 
         const now = new Date();
         let startDate: Date | null = new Date();
+        let endDate: Date = now;
 
-        if (period === 'week') startDate.setDate(now.getDate() - 7);
-        else if (period === 'month') startDate.setMonth(now.getMonth() - 1);
-        else if (period === 'year') startDate.setFullYear(now.getFullYear() - 1);
-        else if (period === 'all') startDate = null; // No date filter
+        if (customStart) {
+            startDate = new Date(customStart);
+            if (customEnd) {
+                endDate = new Date(customEnd);
+            }
+        } else {
+            if (period === 'week') startDate.setDate(now.getDate() - 7);
+            else if (period === 'month') startDate.setMonth(now.getMonth() - 1);
+            else if (period === 'year') startDate.setFullYear(now.getFullYear() - 1);
+            else if (period === 'all') startDate = null; // No date filter
+        }
 
         // Build query
         const query: any = { userId: payload.userId };
-        if (startDate) {
-            query.date = { $gte: startDate };
+        if (startDate || customEnd) {
+            query.date = {};
+            if (startDate) query.date.$gte = startDate;
+            if (customEnd) query.date.$lte = endDate;
         }
 
         // Fetch transactions from MongoDB
