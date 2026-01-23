@@ -236,18 +236,9 @@ export default function JournalPage() {
         });
     };
 
-    if (!isLoaded || !user) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-[#0b0b0b]">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                    <p className="text-zinc-500 text-sm animate-pulse">Loading...</p>
-                </div>
-            </div>
-        );
-    }
 
-    const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+
+    const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
 
     return (
         <div className="min-h-screen bg-[#0b0b0b] text-white pb-20">
@@ -337,7 +328,29 @@ export default function JournalPage() {
                 </div>
 
                 {/* Main Content */}
-                {activeView === 'create' ? (
+                {!isLoaded ? (
+                    <div className="animate-in fade-in duration-500 space-y-6">
+                        <div className="bg-zinc-900/30 border border-zinc-800 rounded-3xl p-6 sm:p-8 lg:p-10">
+                            <div className="max-w-4xl mx-auto space-y-8">
+                                <div className="space-y-4">
+                                    <div className="h-3 w-12 bg-white/5 rounded animate-pulse ml-1" />
+                                    <div className="h-14 w-full bg-white/5 rounded-xl animate-pulse" />
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="h-3 w-16 bg-white/5 rounded animate-pulse ml-1" />
+                                    <div className="h-64 w-full bg-white/5 rounded-xl animate-pulse" />
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="h-3 w-10 bg-white/5 rounded animate-pulse ml-1" />
+                                    <div className="h-20 w-full bg-white/5 rounded-xl animate-pulse" />
+                                </div>
+                                <div className="flex justify-end pt-4">
+                                    <div className="h-12 w-32 bg-white/5 rounded-xl animate-pulse" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : activeView === 'create' ? (
                     /* Create Journal View */
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="bg-zinc-900/30 border border-zinc-800 rounded-3xl p-6 sm:p-8 lg:p-10">
