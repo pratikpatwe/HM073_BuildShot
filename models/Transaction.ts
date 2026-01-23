@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export type TransactionType = 'credit' | 'debit';
-export type Channel = 'UPI' | 'Card' | 'NetBanking' | 'Cash' | 'Other';
+export type Channel = 'UPI' | 'Card' | 'NetBanking' | 'Cash' | 'Other' | 'Manual';
 export type Category =
     | 'Food'
     | 'Travel'
@@ -79,7 +79,7 @@ const TransactionSchema: Schema = new Schema(
         },
         channel: {
             type: String,
-            enum: ['UPI', 'Card', 'NetBanking', 'Cash', 'Other'],
+            enum: ['UPI', 'Card', 'NetBanking', 'Cash', 'Other', 'Manual', 'manual'],
             default: 'Other',
         },
         balanceAfter: {
@@ -97,6 +97,11 @@ TransactionSchema.index({ userId: 1, date: -1 });
 TransactionSchema.index({ userId: 1, category: 1 });
 TransactionSchema.index({ userId: 1, merchant: 1 });
 TransactionSchema.index({ accountId: 1, date: -1 });
+
+// In development, handle model re-registration to pick up schema changes
+if (process.env.NODE_ENV === 'development' && mongoose.models.Transaction) {
+    delete mongoose.models.Transaction;
+}
 
 const Transaction: Model<ITransaction> = mongoose.models.Transaction || mongoose.model<ITransaction>('Transaction', TransactionSchema);
 

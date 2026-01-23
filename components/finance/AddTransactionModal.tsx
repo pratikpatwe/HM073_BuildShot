@@ -8,6 +8,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogTrigger,
 } from "@/components/ui/dialog";
 import FileUpload from '@/components/finance/FileUpload';
@@ -189,6 +190,9 @@ export function AddTransactionModal({ onSuccess, trigger }: AddTransactionModalP
                 <div className="p-6">
                     <DialogHeader className="mb-6">
                         <DialogTitle className="text-3xl font-bold text-white tracking-tight uppercase">Add Transactions</DialogTitle>
+                        <DialogDescription className="sr-only">
+                            Form to add financial transactions via PDF upload, SMS parsing, or manual entry.
+                        </DialogDescription>
                         <p className="text-zinc-500 text-sm mt-1">Import bank statement, SMS, or enter manually.</p>
                     </DialogHeader>
 
