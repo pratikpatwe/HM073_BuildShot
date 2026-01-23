@@ -191,7 +191,7 @@ export default function FinanceDashboardPage() {
                             <Link href="/journal">
                                 <Button variant="ghost" size="sm" className="h-9 px-3 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg gap-2 transition-all cursor-pointer">
                                     <BookOpen className="w-4 h-4" />
-                                    <span className="hidden md:inline">Journal</span>
+                                    <span className="hidden md:inline">Diary</span>
                                 </Button>
                             </Link>
                         </div>
