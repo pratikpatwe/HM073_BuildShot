@@ -28,4 +28,4 @@ When merging on GitHub (Pull Requests), use the same prefix system for the **PR 
 
 ### Branching:
 - **Main**: Protected branch. No direct pushes.
-- **Feature Branches**: Named after the task or user (e.g., `pratik`, `krishna`, `feat/auth`).
+- **Feature Branches**: Named after the task or user (e.g., `pratik`, `krishna`,`varad`, `feat/auth`).
