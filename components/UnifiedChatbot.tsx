@@ -42,10 +42,140 @@ export default function UnifiedChatbot({
         }
     ])
     const [isTyping, setIsTyping] = useState(false)
+    const [isRecording, setIsRecording] = useState(false)
+    const isRecordingRef = useRef(false)
+    const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const audioContextRef = useRef<AudioContext | null>(null)
     const messagesEndRef = useRef<HTMLDivElement>(null)
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+    const audioChunksRef = useRef<Blob[]>([])
 
     const [sessions, setSessions] = useState<any[]>([])
     const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
+
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            // Setup Audio Analysis for Silence Detection
+            const audioContext = new AudioContext();
+            const source = audioContext.createMediaStreamSource(stream);
+            const analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            source.connect(analyser);
+            audioContextRef.current = audioContext;
+
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+            let lastSpeechTime = Date.now();
+            const SILENCE_THRESHOLD = 1500; // 1.5 seconds
+            const VOLUME_THRESHOLD = 30;   // Sensitivity
+
+            const monitorSilence = () => {
+                if (!isRecordingRef.current) return;
+
+                analyser.getByteFrequencyData(dataArray);
+                const volume = dataArray.reduce((a, b) => a + b) / bufferLength;
+
+                if (volume > VOLUME_THRESHOLD) {
+                    lastSpeechTime = Date.now();
+                } else if (Date.now() - lastSpeechTime > SILENCE_THRESHOLD) {
+                    // Silence detected - Commit chunk and reset
+                    if (audioChunksRef.current.length > 0) {
+                        console.log("[STT] Silence detected, transcribing chunk...");
+                        commitChunk();
+                        lastSpeechTime = Date.now(); // Reset timer for next chunk
+                    }
+                }
+                requestAnimationFrame(monitorSilence);
+            };
+
+            const commitChunk = () => {
+                if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+                    // This triggers onstop
+                    mediaRecorderRef.current.stop();
+
+                    if (isRecordingRef.current) {
+                        // Restart recording immediately for the next chunk
+                        const newRecorder = new MediaRecorder(stream);
+                        setupRecorder(newRecorder);
+                        newRecorder.start();
+                    }
+                }
+            };
+
+            const setupRecorder = (recorder: MediaRecorder) => {
+                mediaRecorderRef.current = recorder;
+                audioChunksRef.current = [];
+
+                recorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunksRef.current.push(event.data);
+                    }
+                };
+
+                recorder.onstop = async () => {
+                    if (audioChunksRef.current.length === 0) return;
+
+                    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                    const formData = new FormData();
+                    formData.append('audio', audioBlob);
+
+                    try {
+                        const res = await fetch('/api/stt', {
+                            method: 'POST',
+                            body: formData,
+                        });
+
+                        if (!res.ok) throw new Error("Transcription failed");
+
+                        const data = await res.json();
+                        if (data.transcript) {
+                            setInput(prev => prev + (prev ? " " : "") + data.transcript);
+                        }
+                    } catch (error) {
+                        console.error("STT Chunk Error:", error);
+                    }
+                };
+            };
+
+            const initialRecorder = new MediaRecorder(stream);
+            setupRecorder(initialRecorder);
+            initialRecorder.start();
+
+            isRecordingRef.current = true;
+            setIsRecording(true);
+            monitorSilence();
+
+        } catch (error) {
+            console.error("Mic Access Error:", error);
+            toast.error("Could not access microphone");
+        }
+    };
+
+    const stopRecording = () => {
+        isRecordingRef.current = false;
+        setIsRecording(false);
+
+        if (mediaRecorderRef.current) {
+            mediaRecorderRef.current.stop();
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+        }
+
+        if (audioContextRef.current) {
+            audioContextRef.current.close();
+            audioContextRef.current = null;
+        }
+    };
+
+    const handleMicClick = () => {
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    };
 
     const handleDeleteSession = async (e: React.MouseEvent, sessionId: string) => {
         e.stopPropagation();
@@ -389,8 +519,14 @@ export default function UnifiedChatbot({
                                     <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
                                         <button
                                             type="button"
-                                            className="p-2 rounded-xl text-white/40 hover:text-emerald-400 hover:bg-white/5 transition-all cursor-pointer"
-                                            title="Voice Chat"
+                                            onClick={handleMicClick}
+                                            className={cn(
+                                                "p-2 rounded-xl transition-all cursor-pointer",
+                                                isRecording
+                                                    ? "bg-red-500/20 text-red-500 animate-pulse"
+                                                    : "text-white/40 hover:text-emerald-400 hover:bg-white/5"
+                                            )}
+                                            title={isRecording ? "Stop Recording" : "Voice Chat"}
                                         >
                                             <MicrophoneIcon className="h-5 w-5" />
                                         </button>
@@ -534,8 +670,14 @@ export default function UnifiedChatbot({
                         />
                         <button
                             type="button"
-                            className="p-2.5 rounded-xl text-white/40 hover:text-emerald-400 hover:bg-white/5 transition-all cursor-pointer"
-                            title="Voice Chat"
+                            onClick={handleMicClick}
+                            className={cn(
+                                "p-2.5 rounded-xl transition-all cursor-pointer",
+                                isRecording
+                                    ? "bg-red-500/20 text-red-500 animate-pulse"
+                                    : "text-white/40 hover:text-emerald-400 hover:bg-white/5"
+                            )}
+                            title={isRecording ? "Stop Recording" : "Voice Chat"}
                         >
                             <MicrophoneIcon className="h-4 w-4" />
                         </button>
