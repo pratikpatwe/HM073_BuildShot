@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -36,6 +36,7 @@ import {
     CarouselPrevious,
 } from "@/components/ui/carousel";
 import { cn } from '@/lib/utils';
+import { dataEventEmitter, DATA_UPDATED_EVENT } from "@/lib/events"
 
 interface Analytics {
     summary: {
@@ -77,6 +78,49 @@ export default function FinanceDashboardPage() {
 
     const [dateRange, setDateRange] = useState<{ period: string; from?: Date; to?: Date }>({ period: 'month' });
 
+    const fetchData = useCallback(async () => {
+        let params = new URLSearchParams();
+        if (dateRange.period === 'custom' && dateRange.from) {
+            params.append('startDate', dateRange.from.toISOString());
+            if (dateRange.to) params.append('endDate', dateRange.to.toISOString());
+        } else {
+            params.append('period', dateRange.period);
+        }
+
+        // Load from cache first
+        const cacheKeyAnalytics = `cache_finance_analytics_${params.toString()}`;
+        const cacheKeyTransactions = `cache_finance_transactions_${params.toString()}`;
+        const cachedAnalytics = localStorage.getItem(cacheKeyAnalytics);
+        const cachedTransactions = localStorage.getItem(cacheKeyTransactions);
+        if (cachedAnalytics) setAnalytics(JSON.parse(cachedAnalytics));
+        if (cachedTransactions) setRecentTransactions(JSON.parse(cachedTransactions));
+
+        try {
+            const analyticsRes = await fetch(`/api/finance/analytics?${params.toString()}`);
+            if (analyticsRes.ok) {
+                const data = await analyticsRes.json();
+                setAnalytics(data);
+                localStorage.setItem(cacheKeyAnalytics, JSON.stringify(data));
+            }
+
+            const txnParams = new URLSearchParams(params);
+            txnParams.append('limit', '5');
+            txnParams.append('sortBy', 'date');
+            txnParams.append('sortOrder', 'desc');
+
+            const txnRes = await fetch(`/api/finance/transactions?${txnParams.toString()}`);
+            if (txnRes.ok) {
+                const data = await txnRes.json();
+                setRecentTransactions(data.transactions);
+                localStorage.setItem(cacheKeyTransactions, JSON.stringify(data.transactions));
+            }
+        } catch (error) {
+            console.error('Failed to fetch dashboard data:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [dateRange]);
+
     useEffect(() => {
         supabase.auth.getUser().then(({ data: { user } }) => {
             if (user) {
@@ -92,7 +136,7 @@ export default function FinanceDashboardPage() {
         if (user) {
             fetchData();
         }
-    }, [user, dateRange]);
+    }, [user, fetchData]);
 
     // Refetch data when page becomes visible
     useEffect(() => {
@@ -108,47 +152,20 @@ export default function FinanceDashboardPage() {
             }
         };
 
+        const unsubscribe = dataEventEmitter.subscribe(DATA_UPDATED_EVENT, () => {
+            console.log("Finance update triggered!");
+            fetchData();
+        });
+
         document.addEventListener('visibilitychange', handleVisibilityChange);
         window.addEventListener('focus', handleFocus);
 
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('focus', handleFocus);
+            unsubscribe();
         };
-    }, [user]);
-
-    const fetchData = async () => {
-        try {
-            let params = new URLSearchParams();
-            if (dateRange.period === 'custom' && dateRange.from) {
-                params.append('startDate', dateRange.from.toISOString());
-                if (dateRange.to) params.append('endDate', dateRange.to.toISOString());
-            } else {
-                params.append('period', dateRange.period);
-            }
-
-            const analyticsRes = await fetch(`/api/finance/analytics?${params.toString()}`);
-            if (analyticsRes.ok) {
-                const data = await analyticsRes.json();
-                setAnalytics(data);
-            }
-
-            const txnParams = new URLSearchParams(params);
-            txnParams.append('limit', '5');
-            txnParams.append('sortBy', 'date');
-            txnParams.append('sortOrder', 'desc');
-
-            const txnRes = await fetch(`/api/finance/transactions?${txnParams.toString()}`);
-            if (txnRes.ok) {
-                const data = await txnRes.json();
-                setRecentTransactions(data.transactions);
-            }
-        } catch (error) {
-            console.error('Failed to fetch dashboard data:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    }, [user, fetchData]);
 
     const formatAmount = (amount: number) => {
         return `₹${amount.toLocaleString('en-IN')}`;

@@ -30,6 +30,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { dataEventEmitter, DATA_UPDATED_EVENT } from "@/lib/events"
 
 interface DateDetailsModalProps {
     isOpen: boolean
@@ -88,9 +89,20 @@ export function DateDetailsModal({ isOpen, onClose, date, onEventAdded }: DateDe
 
     const fetchData = useCallback(async () => {
         if (!date) return
+
+        const dateStr = formatDateToLocalISO(date)
+
+        // Load from cache first
+        const cacheKeyStats = `cache_day_stats_${dateStr}`;
+        const cacheKeyEvents = `cache_day_events_${dateStr}`;
+        const cachedStats = localStorage.getItem(cacheKeyStats);
+        const cachedEvents = localStorage.getItem(cacheKeyEvents);
+
+        if (cachedStats) setStats(JSON.parse(cachedStats));
+        if (cachedEvents) setEvents(JSON.parse(cachedEvents));
+
         setLoading(true)
         try {
-            const dateStr = formatDateToLocalISO(date)
             console.log("Fetching for date:", dateStr)
 
             // Fetch Stats and Events in parallel
@@ -105,12 +117,15 @@ export function DateDetailsModal({ isOpen, onClose, date, onEventAdded }: DateDe
             ])
 
             setStats(statsJson)
+            localStorage.setItem(cacheKeyStats, JSON.stringify(statsJson));
 
             const filteredEvents = Array.isArray(eventsJson)
                 ? eventsJson.filter((e: any) => e.date.split('T')[0] === dateStr)
                 : []
 
-            setEvents(filteredEvents.sort((a, b) => parseTime(a.time) - parseTime(b.time)))
+            const sortedEvents = filteredEvents.sort((a, b) => parseTime(a.time) - parseTime(b.time));
+            setEvents(sortedEvents)
+            localStorage.setItem(cacheKeyEvents, JSON.stringify(sortedEvents));
         } catch (e) {
             console.error("Failed to fetch day data", e)
         } finally {
@@ -128,6 +143,12 @@ export function DateDetailsModal({ isOpen, onClose, date, onEventAdded }: DateDe
             setHour("12")
             setMinute("00")
             setPeriod("PM")
+
+            // Subscribe to global updates
+            const unsubscribe = dataEventEmitter.subscribe(DATA_UPDATED_EVENT, () => {
+                fetchData();
+            });
+            return () => unsubscribe();
         }
     }, [isOpen, date, fetchData])
 

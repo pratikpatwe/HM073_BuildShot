@@ -34,6 +34,8 @@ import { toast } from "sonner"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 
+import { dataEventEmitter, DATA_UPDATED_EVENT } from "@/lib/events"
+
 const DayNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
 
 const ProfileSkeleton = () => (
@@ -82,6 +84,12 @@ export default function GamifiedDashboard() {
     const router = useRouter()
 
     const fetchSocialData = useCallback(async () => {
+        // Load from cache first
+        const cachedLeaderboard = localStorage.getItem('cache_leaderboard');
+        const cachedRequests = localStorage.getItem('cache_requests');
+        if (cachedLeaderboard) setLeaderboard(JSON.parse(cachedLeaderboard));
+        if (cachedRequests) setFriendRequests(JSON.parse(cachedRequests));
+
         try {
             const [leaderboardRes, requestsRes] = await Promise.all([
                 fetch('/api/social?action=leaderboard'),
@@ -91,11 +99,13 @@ export default function GamifiedDashboard() {
             if (leaderboardRes.ok) {
                 const data = await leaderboardRes.json();
                 setLeaderboard(data.leaderboard || []);
+                localStorage.setItem('cache_leaderboard', JSON.stringify(data.leaderboard || []));
             }
 
             if (requestsRes.ok) {
                 const data = await requestsRes.json();
                 setFriendRequests(data.requests || []);
+                localStorage.setItem('cache_requests', JSON.stringify(data.requests || []));
             }
         } catch (error) {
             console.error("Failed to fetch social data", error);
@@ -104,6 +114,11 @@ export default function GamifiedDashboard() {
 
     const syncProfile = useCallback(async (currUser: any) => {
         if (!currUser) return;
+
+        // Load from cache first
+        const cachedProfile = localStorage.getItem('cache_profile');
+        if (cachedProfile) setProfile(JSON.parse(cachedProfile));
+
         try {
             const res = await fetch('/api/social/sync', {
                 method: 'POST',
@@ -117,6 +132,7 @@ export default function GamifiedDashboard() {
             if (res.ok) {
                 const data = await res.json();
                 setProfile(data.profile);
+                localStorage.setItem('cache_profile', JSON.stringify(data.profile));
                 fetchSocialData();
             }
         } catch (error) {
@@ -126,17 +142,38 @@ export default function GamifiedDashboard() {
 
     const fetchEvents = useCallback(async () => {
         if (!user) return
+
+        // Load from cache first
+        const cacheKey = `cache_events_${currentDate.getMonth()}_${currentDate.getFullYear()}`;
+        const cachedEvents = localStorage.getItem(cacheKey);
+        if (cachedEvents) setEventDates(new Set(JSON.parse(cachedEvents)));
+
         try {
             const res = await fetch(`/api/events?month=${currentDate.getMonth()}&year=${currentDate.getFullYear()}`)
             const data = await res.json()
             if (Array.isArray(data)) {
-                const dates = new Set(data.map((e: any) => e.date.split('T')[0]))
-                setEventDates(dates)
+                const datesArray = data.map((e: any) => e.date.split('T')[0]);
+                const datesSet = new Set(datesArray);
+                setEventDates(datesSet);
+                localStorage.setItem(cacheKey, JSON.stringify(datesArray));
             }
         } catch (e) {
             console.error("Failed to fetch events for calendar", e)
         }
     }, [user, currentDate])
+
+    useEffect(() => {
+        if (!user) return;
+
+        const unsubscribe = dataEventEmitter.subscribe(DATA_UPDATED_EVENT, () => {
+            console.log("Global data update triggered!");
+            syncProfile(user);
+            fetchSocialData();
+            fetchEvents();
+        });
+
+        return () => unsubscribe();
+    }, [user, syncProfile, fetchSocialData, fetchEvents]);
 
     useEffect(() => {
         const init = async () => {

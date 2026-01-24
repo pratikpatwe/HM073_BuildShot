@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { dataEventEmitter, DATA_UPDATED_EVENT } from "@/lib/events"
 
 interface TodoItem {
     id: string;
@@ -77,6 +78,33 @@ export default function TodoPage() {
     // Edit State
     const [editingTodo, setEditingTodo] = useState<TodoItem | null>(null);
 
+    const fetchTodos = useCallback(async () => {
+        let url = `/api/todo?filter=${activeView === 'filters' ? 'all' : activeView}`;
+        if (labelFilter) url += `&label=${encodeURIComponent(labelFilter)}`;
+        if (dateFilter) url += `&startDate=${dateFilter}&endDate=${dateFilter}`;
+        if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
+
+        // Load from cache first
+        const cacheKey = `cache_todos_${url}`;
+        const cachedTodos = localStorage.getItem(cacheKey);
+        if (cachedTodos) setTodos(JSON.parse(cachedTodos));
+
+        setIsLoading(true);
+        try {
+            const res = await fetch(url);
+            if (res.ok) {
+                const data = await res.json();
+                const todosData = data.todos || [];
+                setTodos(todosData);
+                localStorage.setItem(cacheKey, JSON.stringify(todosData));
+            }
+        } catch (error) {
+            console.error('Failed to fetch todos:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [activeView, labelFilter, dateFilter, searchQuery]);
+
     useEffect(() => {
         supabase.auth.getUser().then(({ data: { user } }) => {
             if (user) {
@@ -92,27 +120,15 @@ export default function TodoPage() {
         if (user && activeView !== 'add') {
             fetchTodos();
         }
-    }, [user, activeView, labelFilter, dateFilter]);
+    }, [user, fetchTodos, activeView]);
 
-    const fetchTodos = async () => {
-        setIsLoading(true);
-        try {
-            let url = `/api/todo?filter=${activeView === 'filters' ? 'all' : activeView}`;
-            if (labelFilter) url += `&label=${encodeURIComponent(labelFilter)}`;
-            if (dateFilter) url += `&startDate=${dateFilter}&endDate=${dateFilter}`;
-            if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
-
-            const res = await fetch(url);
-            if (res.ok) {
-                const data = await res.json();
-                setTodos(data.todos || []);
-            }
-        } catch (error) {
-            console.error('Failed to fetch todos:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    useEffect(() => {
+        const unsubscribe = dataEventEmitter.subscribe(DATA_UPDATED_EVENT, () => {
+            console.log("Todo update triggered!");
+            fetchTodos();
+        });
+        return () => unsubscribe();
+    }, [fetchTodos]);
 
     const handleAddTask = async () => {
         if (!newTitle.trim()) {
