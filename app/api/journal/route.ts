@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Journal from '@/models/Journal';
 import { getUserFromRequest } from '@/lib/auth';
 import { NextRequest } from 'next/server';
+import { addXp, XP_VALUES } from '@/lib/xp';
 
 export async function GET(req: NextRequest) {
     try {
@@ -90,6 +91,22 @@ export async function POST(req: NextRequest) {
             content: content.trim(),
             tags: tags || [],
         });
+
+        // Award XP for daily journal (first entry today)
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const todayEntries = await Journal.countDocuments({
+            userId,
+            createdAt: { $gte: startOfDay, $lte: endOfDay },
+            isDeleted: false
+        });
+
+        if (todayEntries === 1) { // This was the first one
+            await addXp(userId, XP_VALUES.JOURNAL_ENTRY);
+        }
 
         return NextResponse.json({
             id: journal._id.toString(),

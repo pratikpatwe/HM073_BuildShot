@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Todo from '@/models/Todo';
 import { getUserFromRequest } from '@/lib/auth';
 import { NextRequest } from 'next/server';
+import { addXp, XP_VALUES } from '@/lib/xp';
 
 export async function GET(req: NextRequest) {
     try {
@@ -189,7 +190,6 @@ export async function PATCH(req: NextRequest) {
 
         const data = await req.json();
 
-        // If marking as complete, set completedAt
         if (data.isCompleted === true) {
             data.completedAt = new Date();
         } else if (data.isCompleted === false) {
@@ -204,6 +204,18 @@ export async function PATCH(req: NextRequest) {
 
         if (!todo) {
             return NextResponse.json({ error: 'Todo not found' }, { status: 404 });
+        }
+
+        // Award XP if completed today and scheduled for today
+        if (data.isCompleted === true) {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const todoDate = new Date(todo.date);
+            const todoDay = new Date(todoDate.getFullYear(), todoDate.getMonth(), todoDate.getDate());
+
+            if (todoDay.getTime() === today.getTime()) {
+                await addXp(userId, XP_VALUES.TASK_COMPLETE);
+            }
         }
 
         return NextResponse.json({

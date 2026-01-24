@@ -236,32 +236,21 @@ export default function TodoPage() {
         return Object.entries(groups).sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime());
     };
 
-    if (!isLoaded) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-[#0b0b0b]">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                    <p className="text-zinc-500 text-sm animate-pulse">Loading...</p>
-                </div>
-            </div>
-        );
-    }
-
-    const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+    const userName = user?.user_metadata?.full_name || user?.user_metadata?.first_name || user?.email?.split('@')[0] || 'User';
 
     return (
-        <div className="min-h-screen bg-[#0b0b0b] text-white pb-20">
+        <div className="min-h-screen bg-[#060606] text-white pb-20">
             {/* Ambient Background */}
-            <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-900/10 rounded-full blur-3xl opacity-20" />
-                <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-blue-800/10 rounded-full blur-3xl opacity-20" />
+            <div className="fixed inset-0 z-0 pointer-events-none opacity-40">
+                <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-emerald-900/10 rounded-full blur-[120px]" />
+                <div className="absolute bottom-1/4 left-1/4 w-[500px] h-[500px] bg-emerald-800/10 rounded-full blur-[120px]" />
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
                 {/* Header */}
-                <div className="flex flex-col gap-4 mb-8 sm:mb-10">
+                <div className="flex flex-col gap-4 mb-8 sm:mb-12">
                     <div className="flex items-center gap-4 sm:gap-6">
-                        <Link href="/" className="relative w-12 h-12 shrink-0 sm:w-16 sm:h-16 lg:w-20 lg:h-20 hover:opacity-80 transition-opacity cursor-pointer">
+                        <Link href="/" className="relative w-16 h-16 shrink-0 sm:w-20 sm:h-20 lg:w-24 lg:h-24 hover:opacity-80 transition-opacity cursor-pointer">
                             <Image
                                 src="/kairos-logo.svg"
                                 alt="Kairos Logo"
@@ -270,10 +259,10 @@ export default function TodoPage() {
                             />
                         </Link>
                         <div className="flex-1 min-w-0">
-                            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white uppercase tracking-wider truncate">
+                            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white uppercase tracking-tighter truncate">
                                 To-Do List
                             </h1>
-                            <p className="text-zinc-400 mt-1 sm:mt-2 text-sm sm:text-base lg:text-lg font-light truncate">
+                            <p className="text-zinc-500 mt-2 text-base sm:text-lg lg:text-xl font-medium tracking-tight truncate">
                                 Stay organized, {userName}
                             </p>
                         </div>
@@ -281,35 +270,35 @@ export default function TodoPage() {
 
                     <div className="flex items-center justify-between gap-3 sm:gap-6 flex-wrap">
                         {/* Navigation */}
-                        <div className="flex items-center bg-zinc-900/50 border border-zinc-800 rounded-xl p-1 gap-1">
+                        <div className="flex items-center bg-zinc-900/50 border border-zinc-800 rounded-2xl p-1.5 gap-1.5 w-fit">
                             <Link href="/dashboard">
-                                <Button variant="ghost" size="sm" className="h-9 px-3 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg gap-2 transition-all cursor-pointer">
+                                <Button variant="ghost" size="sm" className="h-10 px-4 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl gap-2 transition-all cursor-pointer">
                                     <Home className="w-4 h-4" />
-                                    <span className="hidden md:inline">Dashboard</span>
+                                    <span className="hidden md:inline font-semibold">Dashboard</span>
                                 </Button>
                             </Link>
                             <Link href="/finance">
-                                <Button variant="ghost" size="sm" className="h-9 px-3 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg gap-2 transition-all cursor-pointer">
+                                <Button variant="ghost" size="sm" className="h-10 px-4 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl gap-2 transition-all cursor-pointer">
                                     <Wallet className="w-4 h-4" />
-                                    <span className="hidden md:inline">Finance</span>
+                                    <span className="hidden md:inline font-semibold">Finance</span>
                                 </Button>
                             </Link>
                             <Link href="/habits">
-                                <Button variant="ghost" size="sm" className="h-9 px-3 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg gap-2 transition-all cursor-pointer">
+                                <Button variant="ghost" size="sm" className="h-10 px-4 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl gap-2 transition-all cursor-pointer">
                                     <CheckCircle className="w-4 h-4" />
-                                    <span className="hidden md:inline">Habits</span>
+                                    <span className="hidden md:inline font-semibold">Habits</span>
                                 </Button>
                             </Link>
                             <Link href="/journal">
-                                <Button variant="ghost" size="sm" className="h-9 px-3 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg gap-2 transition-all cursor-pointer">
+                                <Button variant="ghost" size="sm" className="h-10 px-4 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl gap-2 transition-all cursor-pointer">
                                     <BookOpen className="w-4 h-4" />
-                                    <span className="hidden md:inline">Diary</span>
+                                    <span className="hidden md:inline font-semibold">Diary</span>
                                 </Button>
                             </Link>
                             <Link href="/todo">
-                                <Button size="sm" className="h-9 px-3 text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg gap-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer">
+                                <Button size="sm" className="h-10 px-4 text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl gap-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer">
                                     <ListTodo className="w-4 h-4" />
-                                    <span className="hidden md:inline">To-Do</span>
+                                    <span className="hidden md:inline font-semibold">To-Do</span>
                                 </Button>
                             </Link>
                         </div>
@@ -584,12 +573,11 @@ export default function TodoPage() {
     );
 
     function renderTodoList() {
-        if (isLoading) {
+        if (!isLoaded || isLoading) {
             return (
-                <div className="space-y-4">
-                    {[...Array(3)].map((_, i) => (
-                        <div key={i} className="h-16 bg-zinc-800/50 rounded-xl animate-pulse" />
-                    ))}
+                <div className="flex flex-col items-center justify-center py-24 opacity-20 animate-in fade-in duration-500">
+                    <ListTodo className="w-12 h-12 mb-4" />
+                    <p className="text-sm font-bold uppercase tracking-[0.2em]">Syncing Tasks...</p>
                 </div>
             );
         }
