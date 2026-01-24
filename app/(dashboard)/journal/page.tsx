@@ -18,7 +18,8 @@ import {
     Clock,
     ChevronLeft,
     ChevronRight,
-    X
+    X,
+    ListTodo
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -295,6 +296,12 @@ export default function JournalPage() {
                                 <Button size="sm" className="h-9 px-3 text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg gap-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer">
                                     <BookOpen className="w-4 h-4" />
                                     <span className="hidden md:inline">Diary</span>
+                                </Button>
+                            </Link>
+                            <Link href="/todo">
+                                <Button variant="ghost" size="sm" className="h-9 px-3 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg gap-2 transition-all cursor-pointer">
+                                    <ListTodo className="w-4 h-4" />
+                                    <span className="hidden md:inline">To-Do</span>
                                 </Button>
                             </Link>
                         </div>
