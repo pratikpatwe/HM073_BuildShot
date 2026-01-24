@@ -131,6 +131,19 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: true });
         }
 
+        if (action === 'remove_friend') {
+            const { friendId } = data;
+            if (!friendId) return NextResponse.json({ error: 'Friend ID required' }, { status: 400 });
+
+            // Remove from both ends
+            await Promise.all([
+                Profile.updateOne({ userId: senderId }, { $pull: { friends: friendId } }),
+                Profile.updateOne({ userId: friendId }, { $pull: { friends: senderId } })
+            ]);
+
+            return NextResponse.json({ success: true });
+        }
+
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
