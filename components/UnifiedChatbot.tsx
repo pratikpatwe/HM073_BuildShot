@@ -540,7 +540,7 @@ export default function UnifiedChatbot({
                                         value={input}
                                         onChange={(e) => setInput(e.target.value)}
                                         placeholder="Message Kairos AI..."
-                                        className="w-full bg-[#18181b] border border-white/10 rounded-2xl px-4 py-4 pr-14 text-white placeholder-white/20 focus:outline-none focus:border-emerald-500/30 transition-all resize-none shadow-xl custom-scrollbar"
+                                        className="w-full bg-[#18181b] border border-white/10 rounded-2xl px-4 py-4 pr-28 text-white placeholder-white/20 focus:outline-none focus:border-emerald-500/30 transition-all resize-none shadow-xl overflow-hidden"
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter' && !e.shiftKey) {
                                                 e.preventDefault();
@@ -548,12 +548,12 @@ export default function UnifiedChatbot({
                                             }
                                         }}
                                     />
-                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                                    <div className="absolute right-4 bottom-4 flex items-center gap-2">
                                         <button
                                             type="button"
                                             onClick={handleMicClick}
                                             className={cn(
-                                                "p-2 rounded-xl transition-all cursor-pointer",
+                                                "p-2 rounded-full transition-all cursor-pointer",
                                                 isRecording
                                                     ? "bg-red-500/20 text-red-500 animate-pulse"
                                                     : "text-white/40 hover:text-emerald-400 hover:bg-white/5"
@@ -565,7 +565,7 @@ export default function UnifiedChatbot({
                                         <button
                                             type="submit"
                                             disabled={!input.trim() || isTyping}
-                                            className="p-2 rounded-xl bg-emerald-500 text-black hover:bg-emerald-400 disabled:opacity-20 disabled:grayscale transition-all cursor-pointer shadow-lg shadow-emerald-500/20"
+                                            className="p-2 rounded-full bg-emerald-500 text-black hover:bg-emerald-400 disabled:opacity-20 disabled:grayscale transition-all cursor-pointer shadow-lg shadow-emerald-500/20"
                                         >
                                             <Send className="h-5 w-5" />
                                         </button>
