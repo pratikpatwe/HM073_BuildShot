@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { dataEventEmitter, DATA_UPDATED_EVENT } from "@/lib/events"
 
 interface JournalEntry {
     id: string;
@@ -59,6 +60,30 @@ export default function JournalPage() {
     const [editTagInput, setEditTagInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    const fetchJournals = useCallback(async () => {
+        // Load from cache first
+        const cachedJournals = localStorage.getItem('cache_journals');
+        if (cachedJournals) {
+            const parsed = JSON.parse(cachedJournals);
+            setJournals(parsed);
+        }
+
+        setIsLoading(true);
+        try {
+            const res = await fetch('/api/journal');
+            if (res.ok) {
+                const data = await res.json();
+                const journalsData = data.journals || [];
+                setJournals(journalsData);
+                localStorage.setItem('cache_journals', JSON.stringify(journalsData));
+            }
+        } catch (error) {
+            console.error('Failed to fetch journals:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
         supabase.auth.getUser().then(({ data: { user } }) => {
             if (user) {
@@ -74,26 +99,19 @@ export default function JournalPage() {
         if (user) {
             fetchJournals();
         }
-    }, [user]);
+    }, [user, fetchJournals]);
 
     useEffect(() => {
         filterJournals();
     }, [searchQuery, dateFilter, journals]);
 
-    const fetchJournals = async () => {
-        setIsLoading(true);
-        try {
-            const res = await fetch('/api/journal');
-            if (res.ok) {
-                const data = await res.json();
-                setJournals(data.journals || []);
-            }
-        } catch (error) {
-            console.error('Failed to fetch journals:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    useEffect(() => {
+        const unsubscribe = dataEventEmitter.subscribe(DATA_UPDATED_EVENT, () => {
+            console.log("Journal update triggered!");
+            fetchJournals();
+        });
+        return () => unsubscribe();
+    }, [fetchJournals]);
 
     const filterJournals = () => {
         let filtered = [...journals];

@@ -8,6 +8,7 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import { dataEventEmitter, DATA_UPDATED_EVENT } from "@/lib/events"
 
 interface Message {
     id: string
@@ -157,6 +158,10 @@ export default function UnifiedChatbot({
                 if (data.sessionId && !currentSessionId) {
                     setCurrentSessionId(data.sessionId);
                     fetchSessions();
+                }
+
+                if (data.toolsExecuted) {
+                    dataEventEmitter.emit(DATA_UPDATED_EVENT);
                 }
             } else {
                 throw new Error('No response content received from AI');

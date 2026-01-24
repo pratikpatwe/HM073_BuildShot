@@ -19,6 +19,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { cn } from "@/lib/utils"
 import { HabitStatsGraph } from "@/components/habits/HabitStatsGraph"
 import { toast } from "sonner"
+import { dataEventEmitter, DATA_UPDATED_EVENT } from "@/lib/events"
 
 export default function HabitsPage() {
     const [habits, setHabits] = useState<Habit[]>([])
@@ -71,7 +72,20 @@ export default function HabitsPage() {
         setMounted(true)
     }, [selectedWeekStart])
 
+    useEffect(() => {
+        const unsubscribe = dataEventEmitter.subscribe(DATA_UPDATED_EVENT, () => {
+            console.log("Habits update triggered!");
+            fetchHabits();
+        });
+        return () => unsubscribe();
+    }, [selectedWeekStart]);
+
     const fetchHabits = async () => {
+        // Load from cache first
+        const cacheKey = `cache_habits_${selectedWeekStart.toISOString()}`;
+        const cachedHabits = localStorage.getItem(cacheKey);
+        if (cachedHabits) setHabits(JSON.parse(cachedHabits));
+
         try {
             const weekEnd = new Date(selectedWeekStart);
             weekEnd.setDate(selectedWeekStart.getDate() + 6);
@@ -81,18 +95,25 @@ export default function HabitsPage() {
             const data = await res.json()
             if (data.error) throw new Error(data.error)
             setHabits(data)
+            localStorage.setItem(cacheKey, JSON.stringify(data));
         } catch (error) {
-            toast.error("Failed to load habits")
+            console.error("Failed to load habits", error);
         } finally {
             setLoading(false);
         }
     }
 
     const fetchBedtime = async () => {
+        const cachedBedtime = localStorage.getItem('cache_bedtime');
+        if (cachedBedtime) setBedtime(cachedBedtime);
+
         try {
             const res = await fetch('/api/user/settings')
             const data = await res.json()
-            if (data.bedtime) setBedtime(data.bedtime)
+            if (data.bedtime) {
+                setBedtime(data.bedtime);
+                localStorage.setItem('cache_bedtime', data.bedtime);
+            }
         } catch (error) { }
     }
 

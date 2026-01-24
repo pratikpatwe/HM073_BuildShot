@@ -77,9 +77,11 @@ export async function POST(req: NextRequest) {
         let responseText = "";
         let success = false;
         let attempts = 0;
+        let toolsExecuted = false;
 
         while (!success && attempts < API_KEYS.length) {
             try {
+                // ... (rest of model initialization)
                 const genAI = getGenAI();
                 const model = genAI.getGenerativeModel({
                     model: "gemini-3-flash-preview",
@@ -131,6 +133,7 @@ Instructions:
                         if (tool) {
                             console.log(`[AI TOOL CALL] ${toolName}`, toolArgs);
                             const result = await tool.execute(toolArgs, userId);
+                            toolsExecuted = true;
                             toolResponses.push({
                                 functionResponse: {
                                     name: toolName,
@@ -152,6 +155,7 @@ Instructions:
                 }
                 success = true;
             } catch (error: any) {
+                // ... (retry logic)
                 console.error(`Attempt ${attempts + 1} failed with key index ${currentKeyIndex}:`, error.message);
                 attempts++;
                 const isRetryable =
@@ -179,8 +183,7 @@ Instructions:
         session.messages.push({ role: 'user', content: message, timestamp: new Date() });
         session.messages.push({ role: 'assistant', content: finalContent, timestamp: new Date() });
 
-        // Auto-rename if "mature" (e.g., after 2 user messages / 4 total messages)
-        // and if it still has a default-style title or only first message title
+        // Auto-rename
         if (session.messages.length === 4) {
             try {
                 const namingGenAI = getGenAI();
@@ -207,7 +210,8 @@ Instructions:
         return NextResponse.json({
             response: finalContent,
             sessionId: session._id,
-            title: session.title
+            title: session.title,
+            toolsExecuted // New flag
         });
 
     } catch (error: any) {
