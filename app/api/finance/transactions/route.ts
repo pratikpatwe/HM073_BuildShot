@@ -3,6 +3,7 @@ import { getUserFromRequest } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import Transaction from '@/models/Transaction';
 import Account from '@/models/Account';
+import { addXp, XP_VALUES } from '@/lib/xp';
 
 export async function GET(request: NextRequest) {
     try {
@@ -110,6 +111,9 @@ export async function POST(request: NextRequest) {
             channel: 'Manual',
             tags: [],
         });
+
+        // Award XP
+        await addXp(payload.userId, XP_VALUES.ADD_TRANSACTION);
 
         return NextResponse.json({ success: true, transaction });
     } catch (error) {

@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import HabitLog from '@/models/HabitLog';
 import Habit from '@/models/Habit';
 import { getUserFromRequest } from '@/lib/auth';
+import { addXp, XP_VALUES } from '@/lib/xp';
 
 export async function POST(req: NextRequest) {
     try {
@@ -23,6 +24,13 @@ export async function POST(req: NextRequest) {
             { status },
             { upsert: true, new: true }
         );
+
+        // Award XP if status is 'done' and date is today
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (status === 'done' && logDate.getTime() === today.getTime()) {
+            await addXp(userId, XP_VALUES.HABIT_COMPLETE);
+        }
 
         // Recalculate streak
         const allLogs = await HabitLog.find({ habitId, status: 'done' }).sort({ date: -1 });
