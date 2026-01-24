@@ -48,7 +48,6 @@ export default function UnifiedChatbot({
     const audioContextRef = useRef<AudioContext | null>(null)
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-    const audioChunksRef = useRef<Blob[]>([])
 
     const [sessions, setSessions] = useState<any[]>([])
     const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
@@ -69,8 +68,12 @@ export default function UnifiedChatbot({
             const dataArray = new Uint8Array(bufferLength);
 
             let lastSpeechTime = Date.now();
-            const SILENCE_THRESHOLD = 1500; // 1.5 seconds
-            const VOLUME_THRESHOLD = 30;   // Sensitivity
+            let lastChunkTime = Date.now();
+            const SILENCE_THRESHOLD = 700; // Snappy 0.7s silence detection
+            const MAX_CHUNK_DURATION = 4000; // Force chunk every 4s for true real-time feel
+            const AUTO_STOP_THRESHOLD = 10000; // 10s to stop completely
+            const VOLUME_THRESHOLD = 25;   // Increased sensitivity
+            let hasRecordedInThisChunk = false;
 
             const monitorSilence = () => {
                 if (!isRecordingRef.current) return;
@@ -78,16 +81,30 @@ export default function UnifiedChatbot({
                 analyser.getByteFrequencyData(dataArray);
                 const volume = dataArray.reduce((a, b) => a + b) / bufferLength;
 
+                const now = Date.now();
+                const timeSinceLastSpeech = now - lastSpeechTime;
+                const timeSinceLastChunk = now - lastChunkTime;
+
                 if (volume > VOLUME_THRESHOLD) {
-                    lastSpeechTime = Date.now();
-                } else if (Date.now() - lastSpeechTime > SILENCE_THRESHOLD) {
-                    // Silence detected - Commit chunk and reset
-                    if (audioChunksRef.current.length > 0) {
-                        console.log("[STT] Silence detected, transcribing chunk...");
-                        commitChunk();
-                        lastSpeechTime = Date.now(); // Reset timer for next chunk
-                    }
+                    lastSpeechTime = now;
+                    hasRecordedInThisChunk = true;
                 }
+
+                if (timeSinceLastSpeech > AUTO_STOP_THRESHOLD) {
+                    console.log("[STT] Auto-stopping due to long silence...");
+                    stopRecording();
+                    return;
+                }
+
+                // Either silence detected or max duration reached
+                if (hasRecordedInThisChunk && (timeSinceLastSpeech > SILENCE_THRESHOLD || timeSinceLastChunk > MAX_CHUNK_DURATION)) {
+                    console.log("[STT] Committing real-time chunk...");
+                    commitChunk();
+                    lastSpeechTime = now;
+                    lastChunkTime = now;
+                    hasRecordedInThisChunk = false;
+                }
+
                 requestAnimationFrame(monitorSilence);
             };
 
@@ -106,19 +123,19 @@ export default function UnifiedChatbot({
             };
 
             const setupRecorder = (recorder: MediaRecorder) => {
+                const chunks: Blob[] = [];
                 mediaRecorderRef.current = recorder;
-                audioChunksRef.current = [];
 
                 recorder.ondataavailable = (event) => {
                     if (event.data.size > 0) {
-                        audioChunksRef.current.push(event.data);
+                        chunks.push(event.data);
                     }
                 };
 
                 recorder.onstop = async () => {
-                    if (audioChunksRef.current.length === 0) return;
+                    if (chunks.length === 0) return;
 
-                    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                    const audioBlob = new Blob(chunks, { type: 'audio/webm' });
                     const formData = new FormData();
                     formData.append('audio', audioBlob);
 

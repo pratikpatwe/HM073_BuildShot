@@ -21,6 +21,8 @@ import {
     X,
     ListTodo
 } from 'lucide-react';
+import { MicrophoneIcon } from "@heroicons/react/24/outline"
+import { useRef } from "react"
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { dataEventEmitter, DATA_UPDATED_EVENT } from "@/lib/events"
@@ -59,6 +61,134 @@ export default function JournalPage() {
     const [editTags, setEditTags] = useState<string[]>([]);
     const [editTagInput, setEditTagInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    // STT State & Refs
+    const [isRecording, setIsRecording] = useState(false);
+    const isRecordingRef = useRef(false);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const audioContextRef = useRef<AudioContext | null>(null);
+
+    const startRecording = async (targetField: 'content' | 'editContent') => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            const audioContext = new AudioContext();
+            const source = audioContext.createMediaStreamSource(stream);
+            const analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            source.connect(analyser);
+            audioContextRef.current = audioContext;
+
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+            let lastSpeechTime = Date.now();
+            let lastChunkTime = Date.now();
+            const SILENCE_THRESHOLD = 700; // 0.7 seconds
+            const MAX_CHUNK_DURATION = 4000; // Force update every 4 seconds
+            const AUTO_STOP_THRESHOLD = 10000; // 10 seconds
+            const VOLUME_THRESHOLD = 25; // More sensitive
+            let hasRecordedInThisChunk = false;
+
+            const monitorSilence = () => {
+                if (!isRecordingRef.current) return;
+
+                analyser.getByteFrequencyData(dataArray);
+                const volume = dataArray.reduce((a, b) => a + b) / bufferLength;
+
+                const now = Date.now();
+                const timeSinceLastSpeech = now - lastSpeechTime;
+                const timeSinceLastChunk = now - lastChunkTime;
+
+                if (volume > VOLUME_THRESHOLD) {
+                    lastSpeechTime = now;
+                    hasRecordedInThisChunk = true;
+                }
+
+                if (timeSinceLastSpeech > AUTO_STOP_THRESHOLD) {
+                    stopRecording();
+                    return;
+                }
+
+                // Auto-commit on silence OR max duration reached
+                if (hasRecordedInThisChunk && (timeSinceLastSpeech > SILENCE_THRESHOLD || timeSinceLastChunk > MAX_CHUNK_DURATION)) {
+                    commitChunk();
+                    lastSpeechTime = now;
+                    lastChunkTime = now;
+                    hasRecordedInThisChunk = false;
+                }
+
+                requestAnimationFrame(monitorSilence);
+            };
+
+            const commitChunk = () => {
+                if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+                    mediaRecorderRef.current.stop();
+                    if (isRecordingRef.current) {
+                        const newRecorder = new MediaRecorder(stream);
+                        setupRecorder(newRecorder);
+                        newRecorder.start();
+                    }
+                }
+            };
+
+            const setupRecorder = (recorder: MediaRecorder) => {
+                const chunks: Blob[] = [];
+                mediaRecorderRef.current = recorder;
+                recorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) chunks.push(event.data);
+                };
+                recorder.onstop = async () => {
+                    if (chunks.length === 0) return;
+                    const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+                    const formData = new FormData();
+                    formData.append('audio', audioBlob);
+                    try {
+                        const res = await fetch('/api/stt', { method: 'POST', body: formData });
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.transcript) {
+                                if (targetField === 'content') {
+                                    setContent(prev => prev + (prev ? " " : "") + data.transcript);
+                                } else {
+                                    setEditContent(prev => prev + (prev ? " " : "") + data.transcript);
+                                }
+                            }
+                        }
+                    } catch (error) { console.error("STT Error:", error); }
+                };
+            };
+
+            const initialRecorder = new MediaRecorder(stream);
+            setupRecorder(initialRecorder);
+            initialRecorder.start();
+
+            isRecordingRef.current = true;
+            setIsRecording(true);
+            monitorSilence();
+        } catch (error) {
+            console.error("Mic Access Error:", error);
+            toast.error("Could not access microphone");
+        }
+    };
+
+    const stopRecording = () => {
+        isRecordingRef.current = false;
+        setIsRecording(false);
+        if (mediaRecorderRef.current) {
+            mediaRecorderRef.current.stop();
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+        }
+        if (audioContextRef.current) {
+            audioContextRef.current.close();
+            audioContextRef.current = null;
+        }
+    };
+
+    const handleMicClick = (targetField: 'content' | 'editContent') => {
+        if (isRecording) stopRecording();
+        else startRecording(targetField);
+    };
 
     const fetchJournals = useCallback(async () => {
         // Load from cache first
@@ -396,9 +526,23 @@ export default function JournalPage() {
 
                                 {/* Content Input */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">
-                                        Content
-                                    </label>
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">
+                                            Content
+                                        </label>
+                                        <button
+                                            onClick={() => handleMicClick('content')}
+                                            className={cn(
+                                                "p-1.5 rounded-lg transition-all cursor-pointer",
+                                                isRecording
+                                                    ? "bg-red-500/20 text-red-500 animate-pulse"
+                                                    : "text-zinc-500 hover:text-emerald-400 hover:bg-emerald-500/10"
+                                            )}
+                                            title={isRecording ? "Stop Recording" : "Dictate Entry"}
+                                        >
+                                            <MicrophoneIcon className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                     <textarea
                                         value={content}
                                         onChange={(e) => setContent(e.target.value)}
@@ -636,13 +780,32 @@ export default function JournalPage() {
                             <div className="p-6 sm:p-8 overflow-y-auto flex-1">
                                 {isEditingJournal ? (
                                     <div className="space-y-6">
-                                        <textarea
-                                            value={editContent}
-                                            onChange={(e) => setEditContent(e.target.value)}
-                                            placeholder="Write your thoughts..."
-                                            rows={12}
-                                            className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors resize-none leading-relaxed"
-                                        />
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between px-1">
+                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
+                                                    Content
+                                                </label>
+                                                <button
+                                                    onClick={() => handleMicClick('editContent')}
+                                                    className={cn(
+                                                        "p-1.5 rounded-lg transition-all cursor-pointer",
+                                                        isRecording
+                                                            ? "bg-red-500/20 text-red-500 animate-pulse"
+                                                            : "text-zinc-500 hover:text-emerald-400 hover:bg-emerald-500/10"
+                                                    )}
+                                                    title={isRecording ? "Stop Recording" : "Dictate Changes"}
+                                                >
+                                                    <MicrophoneIcon className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                            <textarea
+                                                value={editContent}
+                                                onChange={(e) => setEditContent(e.target.value)}
+                                                placeholder="Write your thoughts..."
+                                                rows={12}
+                                                className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors resize-none leading-relaxed"
+                                            />
+                                        </div>
                                         <div className="space-y-2">
                                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Tags</p>
                                             <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4">
