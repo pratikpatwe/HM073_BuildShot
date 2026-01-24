@@ -11,7 +11,7 @@ import {
     Sparkles, Clock, ChevronLeft, ChevronRight, TrendingUp, LayoutGrid, List, Target, Settings2,
     Book, Dumbbell, Flower2, Leaf, Wine, PenTool, Circle, Heart, Brain, Coffee, Music, Moon, Sun, Star, Zap, Trophy, User,
     MoreVertical, Trash2, Settings,
-    Home, Wallet, BookOpen, CheckCircle
+    Home, Wallet, BookOpen, CheckCircle, ListTodo
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -391,6 +391,12 @@ export default function HabitsPage() {
                                 <Button variant="ghost" size="sm" className="h-9 px-3 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg gap-2 transition-all cursor-pointer">
                                     <BookOpen className="w-4 h-4" />
                                     <span className="hidden md:inline">Diary</span>
+                                </Button>
+                            </Link>
+                            <Link href="/todo">
+                                <Button variant="ghost" size="sm" className="h-9 px-3 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg gap-2 transition-all cursor-pointer">
+                                    <ListTodo className="w-4 h-4" />
+                                    <span className="hidden md:inline">To-Do</span>
                                 </Button>
                             </Link>
                         </div>

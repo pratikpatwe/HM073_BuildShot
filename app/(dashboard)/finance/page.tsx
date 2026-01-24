@@ -25,7 +25,8 @@ import {
     Search,
     Home,
     CheckCircle,
-    BookOpen
+    BookOpen,
+    ListTodo
 } from 'lucide-react';
 import {
     Carousel,
@@ -208,6 +209,12 @@ export default function FinanceDashboardPage() {
                                 <Button variant="ghost" size="sm" className="h-9 px-3 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg gap-2 transition-all cursor-pointer">
                                     <BookOpen className="w-4 h-4" />
                                     <span className="hidden md:inline">Diary</span>
+                                </Button>
+                            </Link>
+                            <Link href="/todo">
+                                <Button variant="ghost" size="sm" className="h-9 px-3 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg gap-2 transition-all cursor-pointer">
+                                    <ListTodo className="w-4 h-4" />
+                                    <span className="hidden md:inline">To-Do</span>
                                 </Button>
                             </Link>
                         </div>
