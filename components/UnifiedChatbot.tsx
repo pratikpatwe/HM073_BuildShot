@@ -48,6 +48,8 @@ export default function UnifiedChatbot({
     const audioContextRef = useRef<AudioContext | null>(null)
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+    const expandedTextareaRef = useRef<HTMLTextAreaElement>(null)
+    const compactTextareaRef = useRef<HTMLTextAreaElement>(null)
 
     const [sessions, setSessions] = useState<any[]>([])
     const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
@@ -211,6 +213,18 @@ export default function UnifiedChatbot({
             console.error("Failed to delete session", e);
         }
     };
+
+    const adjustTextareaHeight = (textarea: HTMLTextAreaElement | null) => {
+        if (textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
+        }
+    };
+
+    useEffect(() => {
+        adjustTextareaHeight(expandedTextareaRef.current);
+        adjustTextareaHeight(compactTextareaRef.current);
+    }, [input]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -521,11 +535,12 @@ export default function UnifiedChatbot({
                             <div className="max-w-3xl mx-auto relative group">
                                 <form onSubmit={handleSubmit} className="relative">
                                     <textarea
+                                        ref={expandedTextareaRef}
                                         rows={1}
                                         value={input}
                                         onChange={(e) => setInput(e.target.value)}
                                         placeholder="Message Kairos AI..."
-                                        className="w-full bg-[#18181b] border border-white/10 rounded-2xl px-4 py-4 pr-14 text-white placeholder-white/20 focus:outline-none focus:border-emerald-500/30 transition-all resize-none shadow-xl"
+                                        className="w-full bg-[#18181b] border border-white/10 rounded-2xl px-4 py-4 pr-14 text-white placeholder-white/20 focus:outline-none focus:border-emerald-500/30 transition-all resize-none shadow-xl custom-scrollbar"
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter' && !e.shiftKey) {
                                                 e.preventDefault();
@@ -678,12 +693,19 @@ export default function UnifiedChatbot({
                 {/* Input */}
                 <form onSubmit={handleSubmit} className="p-4 border-t border-white/5 bg-[#0f0f0f]">
                     <div className="flex gap-2">
-                        <input
-                            type="text"
+                        <textarea
+                            ref={compactTextareaRef}
+                            rows={1}
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             placeholder="Ask Kairos AI..."
-                            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-emerald-500/40 transition-colors"
+                            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-emerald-500/40 transition-colors resize-none overflow-y-auto custom-scrollbar leading-relaxed"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSubmit(e as any);
+                                }
+                            }}
                         />
                         <button
                             type="button"
