@@ -12,7 +12,12 @@ export async function POST(req: NextRequest) {
         if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const data = await req.json();
-        const { name, email, avatar } = data;
+        let { name, email, avatar } = data;
+
+        // Improve avatar quality for Google-hosted images
+        if (avatar && avatar.includes('googleusercontent.com')) {
+            avatar = avatar.replace(/=s\d+(-c)?$/, '=s400-c');
+        }
 
         const profile = await getOrCreateProfile(payload.userId, email, name, avatar);
         if (!profile) return NextResponse.json({ error: 'Failed to sync profile' }, { status: 500 });

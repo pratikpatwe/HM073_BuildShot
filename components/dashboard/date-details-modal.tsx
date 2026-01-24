@@ -13,7 +13,7 @@ import {
     Trash2,
 } from "lucide-react"
 
-import { cn } from "@/lib/utils"
+import { cn, formatDateToLocalISO } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -90,7 +90,8 @@ export function DateDetailsModal({ isOpen, onClose, date, onEventAdded }: DateDe
         if (!date) return
         setLoading(true)
         try {
-            const dateStr = date.toISOString().split('T')[0]
+            const dateStr = formatDateToLocalISO(date)
+            console.log("Fetching for date:", dateStr)
 
             // Fetch Stats and Events in parallel
             const [statsRes, eventsRes] = await Promise.all([
@@ -158,7 +159,7 @@ export function DateDetailsModal({ isOpen, onClose, date, onEventAdded }: DateDe
             title,
             description,
             time: timeString,
-            date: date.toISOString()
+            date: formatDateToLocalISO(date)
         }
 
         setEvents(prev => [...prev, newOptimisticEvent].sort((a, b) => parseTime(a.time) - parseTime(b.time)))
@@ -173,7 +174,7 @@ export function DateDetailsModal({ isOpen, onClose, date, onEventAdded }: DateDe
                     title,
                     description,
                     time: timeString,
-                    date: date.toISOString()
+                    date: formatDateToLocalISO(date)
                 })
             })
             if (res.ok) {
