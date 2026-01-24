@@ -20,6 +20,7 @@ import {
     ListTodo,
     LogOut,
     X,
+    User,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -34,6 +35,33 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input"
 
 const DayNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
+
+const ProfileSkeleton = () => (
+    <div className="bg-[#0c0c0c] border border-white/5 rounded-[32px] p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-stretch shadow-2xl relative overflow-hidden group">
+        {/* Profile Picture Box Skeleton */}
+        <div className="w-full sm:w-40 h-40 shrink-0 bg-zinc-900 rounded-2xl border border-white/5 flex items-center justify-center p-2">
+            <div className="h-full w-full rounded-xl bg-white/5 animate-pulse" />
+        </div>
+
+        {/* Info & Actions Skeleton */}
+        <div className="flex-1 flex flex-col justify-between py-1">
+            <div className="mb-4 bg-zinc-900/50 border border-white/5 rounded-xl p-4 min-h-[80px] space-y-3">
+                <div className="flex items-center justify-between">
+                    <div className="h-6 w-32 bg-white/5 rounded-md animate-pulse" />
+                    <div className="h-5 w-16 bg-white/5 rounded-md animate-pulse" />
+                </div>
+                <div className="h-4 w-48 bg-white/5 rounded-md animate-pulse" />
+                <div className="w-full bg-zinc-800 h-1 rounded-full overflow-hidden">
+                    <div className="bg-white/10 h-full w-1/3 animate-pulse" />
+                </div>
+            </div>
+            <div className="flex items-center gap-3">
+                <div className="flex-1 h-12 rounded-xl bg-zinc-900 border border-white/5 animate-pulse" />
+                <div className="flex-1 h-12 rounded-xl bg-zinc-900 border border-white/5 animate-pulse" />
+            </div>
+        </div>
+    </div>
+)
 
 export default function GamifiedDashboard() {
     const [user, setUser] = useState<any>(null)
@@ -111,17 +139,36 @@ export default function GamifiedDashboard() {
     }, [user, currentDate])
 
     useEffect(() => {
-        const getUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (!user) {
+        const init = async () => {
+            // 1. Initial Quick Fetch (Session is usually available instantly)
+            const { data: { session } } = await supabase.auth.getSession()
+            if (session?.user) {
+                setUser(session.user)
+                // Trigger sync and social data in parallel immediately
+                Promise.all([
+                    syncProfile(session.user),
+                    fetchSocialData()
+                ])
+            }
+
+            // 2. Verified Fetch (Ensures session is still valid)
+            const { data: { user: verifiedUser } } = await supabase.auth.getUser()
+            if (!verifiedUser) {
                 router.push("/onboarding")
                 return
             }
-            setUser(user)
-            syncProfile(user)
+
+            // Update user if verified user is different or not set
+            if (!session?.user) {
+                setUser(verifiedUser)
+                Promise.all([
+                    syncProfile(verifiedUser),
+                    fetchSocialData()
+                ])
+            }
         }
-        getUser()
-    }, [supabase.auth, router, syncProfile])
+        init()
+    }, [supabase.auth, router, syncProfile, fetchSocialData])
 
     useEffect(() => {
         if (user) {
@@ -191,9 +238,16 @@ export default function GamifiedDashboard() {
         }
     }
 
+    const optimizeAvatarUrl = (url: string | undefined | null) => {
+        if (!url) return ""
+        return url.includes('googleusercontent.com')
+            ? url.replace(/=s\d+(-c)?$/, '=s400-c')
+            : url
+    }
+
     const userName = user?.user_metadata?.full_name || user?.user_metadata?.first_name || user?.email?.split('@')[0] || "User"
     const userEmail = user?.email || ""
-    const userAvatar = user?.user_metadata?.avatar_url || ""
+    const userAvatar = optimizeAvatarUrl(user?.user_metadata?.avatar_url)
 
     // Calendar Logic
     const calendarDays = useMemo(() => {
@@ -300,111 +354,111 @@ export default function GamifiedDashboard() {
                     </div>
 
                     {/* Right: Profile Section */}
-                    <div className="bg-[#0c0c0c] border border-white/5 rounded-[32px] p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-stretch shadow-2xl relative overflow-hidden group hover:border-emerald-500/10 transition-all">
-                        {/* Profile Picture Box */}
-                        <div className="w-full sm:w-40 h-40 shrink-0 bg-zinc-900 rounded-2xl border border-white/5 flex items-center justify-center p-2 group-hover:border-emerald-500/20 transition-all overflow-hidden">
-                            <Avatar className="h-full w-full rounded-xl">
-                                <AvatarImage src={userAvatar} className="object-cover" />
-                                <AvatarFallback className="bg-zinc-800 text-emerald-400 text-3xl font-black">
-                                    {userName.charAt(0)}
-                                </AvatarFallback>
-                            </Avatar>
-                        </div>
+                    {!user || !profile ? (
+                        <ProfileSkeleton />
+                    ) : (
+                        <div className="bg-[#0c0c0c] border border-white/5 rounded-[32px] p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-stretch shadow-2xl relative overflow-hidden group hover:border-emerald-500/10 transition-all">
+                            {/* Profile Picture Box */}
+                            <div className="w-full sm:w-40 h-40 shrink-0 bg-zinc-900 rounded-2xl border border-white/5 flex items-center justify-center p-2 group-hover:border-emerald-500/20 transition-all overflow-hidden">
+                                <Avatar className="h-full w-full rounded-xl">
+                                    <AvatarImage src={userAvatar} className="object-cover" />
+                                    <AvatarFallback className="bg-zinc-800 text-emerald-400 text-3xl font-black">
+                                        <User className="w-10 h-10" />
+                                    </AvatarFallback>
+                                </Avatar>
+                            </div>
 
-                        {/* Info & Actions */}
-                        <div className="flex-1 flex flex-col justify-between py-1">
-                            {/* User Info Box */}
-                            <div className="mb-4 bg-zinc-900/50 border border-white/5 rounded-xl p-4 min-h-[80px]">
-                                <div className="flex items-center justify-between mb-0.5">
-                                    <h3 className="text-lg font-bold text-white">{userName}</h3>
-                                    {profile && (
+                            {/* Info & Actions */}
+                            <div className="flex-1 flex flex-col justify-between py-1">
+                                {/* User Info Box */}
+                                <div className="mb-4 bg-zinc-900/50 border border-white/5 rounded-xl p-4 min-h-[80px]">
+                                    <div className="flex items-center justify-between mb-0.5">
+                                        <h3 className="text-lg font-bold text-white">{userName}</h3>
                                         <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-md">
                                             <Trophy className="w-3 h-3 text-emerald-500" />
                                             <span className="text-[10px] font-black text-emerald-400">LVL {profile.level}</span>
                                         </div>
-                                    )}
-                                </div>
-                                <p className="text-sm text-zinc-500 font-medium tracking-tight mb-2">
-                                    {userEmail}
-                                </p>
-                                {profile && (
+                                    </div>
+                                    <p className="text-sm text-zinc-500 font-medium tracking-tight mb-2">
+                                        {userEmail}
+                                    </p>
                                     <div className="w-full bg-zinc-800 h-1 rounded-full overflow-hidden">
                                         <div
                                             className="bg-emerald-500 h-full transition-all duration-500"
                                             style={{ width: `${(profile.xp % 100)}%` }}
                                         />
                                     </div>
-                                )}
-                            </div>
+                                </div>
 
-                            {/* Action Buttons Row */}
-                            <div className="flex items-center gap-3">
-                                {/* Notification Popover */}
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <button className="flex-1 h-12 rounded-xl bg-zinc-900 border border-white/5 flex items-center justify-center gap-2 hover:bg-white/5 transition-all group/btn relative cursor-pointer font-bold uppercase tracking-widest text-xs text-zinc-400 hover:text-white">
-                                            <Bell className="w-4 h-4 text-emerald-500" />
-                                            <span>Notification</span>
-                                            {friendRequests.length > 0 && (
-                                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center text-white">
-                                                    {friendRequests.length}
-                                                </span>
-                                            )}
-                                        </button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-80 bg-[#111111] border-white/5 rounded-2xl p-4 shadow-2xl z-50">
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Friend Requests</h4>
-                                                <UserPlus className="w-3 h-3 text-emerald-500" />
-                                            </div>
-                                            {friendRequests.length === 0 ? (
-                                                <p className="text-xs text-zinc-600 text-center py-4 italic">No new requests</p>
-                                            ) : (
-                                                <div className="space-y-3">
-                                                    {friendRequests.map(req => (
-                                                        <div key={req.id} className="flex items-center justify-between p-2 rounded-lg bg-white/5 group/req">
-                                                            <div className="flex items-center gap-3">
-                                                                <Avatar className="h-8 w-8 rounded-lg">
-                                                                    <AvatarFallback className="bg-zinc-800 text-[10px]">{req.senderName.charAt(0)}</AvatarFallback>
-                                                                </Avatar>
-                                                                <div className="flex flex-col">
-                                                                    <span className="text-xs font-bold text-zinc-300">{req.senderName}</span>
-                                                                    <span className="text-[9px] text-zinc-500">{req.senderEmail}</span>
+                                {/* Action Buttons Row */}
+                                <div className="flex items-center gap-3">
+                                    {/* Notification Popover */}
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <button className="flex-1 h-12 rounded-xl bg-zinc-900 border border-white/5 flex items-center justify-center gap-2 hover:bg-white/5 transition-all group/btn relative cursor-pointer font-bold uppercase tracking-widest text-xs text-zinc-400 hover:text-white">
+                                                <Bell className="w-4 h-4 text-emerald-500" />
+                                                <span>Notification</span>
+                                                {friendRequests.length > 0 && (
+                                                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center text-white">
+                                                        {friendRequests.length}
+                                                    </span>
+                                                )}
+                                            </button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-80 bg-[#111111] border-white/5 rounded-2xl p-4 shadow-2xl z-50">
+                                            <div className="space-y-4">
+                                                <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Friend Requests</h4>
+                                                    <UserPlus className="w-3 h-3 text-emerald-500" />
+                                                </div>
+                                                {friendRequests.length === 0 ? (
+                                                    <p className="text-xs text-zinc-600 text-center py-4 italic">No new requests</p>
+                                                ) : (
+                                                    <div className="space-y-3">
+                                                        {friendRequests.map(req => (
+                                                            <div key={req.id} className="flex items-center justify-between p-2 rounded-lg bg-white/5 group/req">
+                                                                <div className="flex items-center gap-3">
+                                                                    <Avatar className="h-8 w-8 rounded-lg">
+                                                                        <AvatarFallback className="bg-zinc-800 text-[10px]">{req.senderName.charAt(0)}</AvatarFallback>
+                                                                    </Avatar>
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-xs font-bold text-zinc-300">{req.senderName}</span>
+                                                                        <span className="text-[9px] text-zinc-500">{req.senderEmail}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-1">
+                                                                    <button
+                                                                        onClick={() => handleAcceptRequest(req.id)}
+                                                                        className="p-1.5 rounded-md hover:bg-emerald-500 hover:text-black transition-all cursor-pointer"
+                                                                    >
+                                                                        <Check className="w-3 h-3" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleRejectRequest(req.id)}
+                                                                        className="p-1.5 rounded-md hover:bg-red-500/20 hover:text-red-500 transition-all cursor-pointer"
+                                                                    >
+                                                                        <X className="w-3 h-3" />
+                                                                    </button>
                                                                 </div>
                                                             </div>
-                                                            <div className="flex items-center gap-1">
-                                                                <button
-                                                                    onClick={() => handleAcceptRequest(req.id)}
-                                                                    className="p-1.5 rounded-md hover:bg-emerald-500 hover:text-black transition-all cursor-pointer"
-                                                                >
-                                                                    <Check className="w-3 h-3" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleRejectRequest(req.id)}
-                                                                    className="p-1.5 rounded-md hover:bg-red-500/20 hover:text-red-500 transition-all cursor-pointer"
-                                                                >
-                                                                    <X className="w-3 h-3" />
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </PopoverContent>
-                                </Popover>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </PopoverContent>
+                                    </Popover>
 
-                                <button
-                                    onClick={handleLogout}
-                                    className="flex-1 h-12 rounded-xl bg-zinc-900 border border-white/5 flex items-center justify-center gap-2 hover:bg-red-500/10 group/btn transition-all cursor-pointer font-bold uppercase tracking-widest text-xs text-zinc-400 hover:text-red-400"
-                                >
-                                    <LogOut className="w-4 h-4 text-red-500" />
-                                    <span>Logout</span>
-                                </button>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="flex-1 h-12 rounded-xl bg-zinc-900 border border-white/5 flex items-center justify-center gap-2 hover:bg-red-500/10 group/btn transition-all cursor-pointer font-bold uppercase tracking-widest text-xs text-zinc-400 hover:text-red-400"
+                                    >
+                                        <LogOut className="w-4 h-4 text-red-500" />
+                                        <span>Logout</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 <div className="flex flex-col lg:flex-row gap-6 items-stretch lg:h-[730px]">
@@ -489,7 +543,7 @@ export default function GamifiedDashboard() {
                                 <div className="flex -space-x-2">
                                     {leaderboard.slice(0, 3).map((person, i) => (
                                         <Avatar key={i} className="border-2 border-[#060606] w-9 h-9 ring-1 ring-white/5">
-                                            <AvatarImage src={person.avatar} />
+                                            <AvatarImage src={optimizeAvatarUrl(person.avatar)} />
                                             <AvatarFallback className="bg-zinc-800 text-[10px] font-bold">{person.name.charAt(0)}</AvatarFallback>
                                         </Avatar>
                                     ))}
@@ -528,7 +582,7 @@ export default function GamifiedDashboard() {
                                         <div className="flex items-center gap-4">
                                             <div className="relative">
                                                 <Avatar className="h-12 w-12 rounded-xl shrink-0 group-hover:scale-105 transition-transform">
-                                                    <AvatarImage src={player.avatar} />
+                                                    <AvatarImage src={optimizeAvatarUrl(player.avatar)} />
                                                     <AvatarFallback className="bg-zinc-800 font-bold">{player.name.charAt(0)}</AvatarFallback>
                                                 </Avatar>
                                                 {player.id === user?.id && (

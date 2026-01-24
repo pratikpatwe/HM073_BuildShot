@@ -1,9 +1,11 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Send, X, Maximize2, Minimize2, Plus, MessageSquare, History, User } from "lucide-react"
+import { Send, X, Maximize2, Minimize2, Plus, MessageSquare, History, User, Trash2 } from "lucide-react"
 import { ChatBubbleBottomCenterTextIcon, MicrophoneIcon } from "@heroicons/react/24/outline"
 import { motion, AnimatePresence } from "framer-motion"
+import { toast } from "sonner"
+import { cn } from "@/lib/utils"
 
 interface Message {
     id: string
@@ -39,9 +41,72 @@ export default function UnifiedChatbot({
     const [isTyping, setIsTyping] = useState(false)
     const messagesEndRef = useRef<HTMLDivElement>(null)
 
+    const [sessions, setSessions] = useState<any[]>([])
+    const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
+
+    const handleDeleteSession = async (e: React.MouseEvent, sessionId: string) => {
+        e.stopPropagation();
+
+        try {
+            const res = await fetch(`/api/chat?sessionId=${sessionId}`, { method: 'DELETE' });
+            if (res.ok) {
+                setSessions(prev => prev.filter(s => s._id !== sessionId));
+                toast.success("Chat deleted successfully");
+                if (currentSessionId === sessionId) {
+                    startNewChat();
+                }
+            }
+        } catch (e) {
+            toast.error("Failed to delete chat");
+            console.error("Failed to delete session", e);
+        }
+    };
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
     }
+
+    const fetchSessions = async () => {
+        try {
+            const res = await fetch('/api/chat')
+            const data = await res.json()
+            if (data.sessions) setSessions(data.sessions)
+        } catch (e) {
+            console.error("Failed to fetch sessions", e)
+        }
+    }
+
+    const loadSession = async (sessionId: string) => {
+        try {
+            const res = await fetch(`/api/chat?sessionId=${sessionId}`)
+            const data = await res.json()
+            if (data.session) {
+                setMessages(data.session.messages.map((m: any, idx: number) => ({
+                    id: `${sessionId}-${idx}`,
+                    role: m.role,
+                    content: m.content
+                })))
+                setCurrentSessionId(sessionId)
+            }
+        } catch (e) {
+            console.error("Failed to load session", e)
+        }
+    }
+
+    const startNewChat = () => {
+        setMessages([{
+            id: "1",
+            role: "assistant",
+            content: initialMessage || defaultMessages[mode] || defaultMessages.general
+        }])
+        setCurrentSessionId(null)
+    }
+
+    useEffect(() => {
+        if (isOpen) {
+            fetchSessions()
+        }
+    }, [isOpen])
 
     useEffect(() => {
         scrollToBottom()
@@ -67,7 +132,8 @@ export default function UnifiedChatbot({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: userMessage.content,
-                    mode: mode
+                    mode: mode,
+                    sessionId: currentSessionId
                 }),
             });
 
@@ -80,43 +146,23 @@ export default function UnifiedChatbot({
                     content: data.response
                 };
                 setMessages(prev => [...prev, aiMessage]);
-            } else {
-                // Fallback for mock/simulation if general endpoint doesn't exist yet
-                if (mode === "general") {
-                    throw new Error("Simulate General Response");
+                if (data.sessionId && !currentSessionId) {
+                    setCurrentSessionId(data.sessionId);
+                    fetchSessions();
                 }
+            } else {
                 throw new Error(data.error || 'Failed to get response');
             }
         } catch (error) {
-            if (mode === "general") {
-                // Simulation for general mode if API isn't ready
-                setTimeout(() => {
-                    const responses = [
-                        "I've analyzed your recent habit streaks. You're most consistent with morning routines!",
-                        "Looking at your mood logs, there's a strong correlation between exercise and positive energy.",
-                        "Your productivity peaks in the late afternoon. Consider scheduling focus time then.",
-                        "You've completed 80% of your habits this week. Great progress!"
-                    ];
-                    const aiMessage: Message = {
-                        id: (Date.now() + 1).toString(),
-                        role: "assistant",
-                        content: responses[Math.floor(Math.random() * responses.length)]
-                    };
-                    setMessages(prev => [...prev, aiMessage]);
-                    setIsTyping(false);
-                }, 1000);
-            } else {
-                console.error('Chat error:', error);
-                const errorMessage: Message = {
-                    id: (Date.now() + 2).toString(),
-                    role: "assistant",
-                    content: "I'm sorry, I'm having trouble connecting right now. Please try again later."
-                };
-                setMessages(prev => [...prev, errorMessage]);
-                setIsTyping(false);
-            }
+            console.error('Chat error:', error);
+            const errorMessage: Message = {
+                id: (Date.now() + 2).toString(),
+                role: "assistant",
+                content: "I'm sorry, I'm having trouble connecting right now. Please try again later."
+            };
+            setMessages(prev => [...prev, errorMessage]);
         } finally {
-            if (mode !== "general") setIsTyping(false);
+            setIsTyping(false);
         }
     }
 
@@ -163,20 +209,47 @@ export default function UnifiedChatbot({
                 >
                     {/* ChatGPT Style Sidebar */}
                     <div className="w-64 bg-[#0d0d0d] border-r border-white/5 hidden md:flex flex-col p-3">
-                        <button className="flex items-center gap-3 w-full p-3 rounded-lg border border-white/10 hover:bg-white/5 transition-colors text-white text-sm mb-4">
+                        <button
+                            onClick={startNewChat}
+                            className="flex items-center gap-3 w-full p-3 rounded-lg border border-white/10 hover:bg-white/5 transition-colors text-white text-sm mb-4 cursor-pointer"
+                        >
                             <Plus className="h-4 w-4" />
                             New Chat
                         </button>
-                        <div className="flex-1 overflow-y-auto space-y-2">
+                        <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar">
                             <div className="text-[10px] font-bold text-white/30 uppercase tracking-wider mt-4 px-2">History</div>
-                            <button className="flex items-center gap-3 w-full p-2.5 rounded-lg bg-white/5 text-white text-sm text-left truncate group border border-emerald-500/20">
-                                <MessageSquare className="h-4 w-4 text-emerald-400" />
-                                {mode === "finance" ? "Financial Analysis" : "Life Insights"}
-                            </button>
-                            <button className="flex items-center gap-3 w-full p-2.5 rounded-lg hover:bg-white/5 text-white/60 text-sm text-left truncate group">
-                                <History className="h-4 w-4" />
-                                Previous Session
-                            </button>
+                            {sessions.map((session) => (
+                                <div
+                                    key={session._id}
+                                    className="relative group/item"
+                                >
+                                    <button
+                                        onClick={() => loadSession(session._id)}
+                                        className={cn(
+                                            "flex items-center gap-3 w-full p-2.5 rounded-lg text-white text-sm text-left truncate group border transition-all cursor-pointer pr-10",
+                                            currentSessionId === session._id
+                                                ? "bg-white/5 border-emerald-500/20"
+                                                : "hover:bg-white/5 border-transparent text-white/60 hover:text-white"
+                                        )}
+                                    >
+                                        <MessageSquare className={cn(
+                                            "h-4 w-4 shrink-0",
+                                            currentSessionId === session._id ? "text-emerald-400" : "text-white/20"
+                                        )} />
+                                        <span className="truncate">{session.title}</span>
+                                    </button>
+                                    <button
+                                        onClick={(e) => handleDeleteSession(e, session._id)}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-white/10 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover/item:opacity-100 transition-all cursor-pointer"
+                                        title="Delete chat"
+                                    >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
+                                </div>
+                            ))}
+                            {sessions.length === 0 && (
+                                <div className="text-[10px] text-white/10 px-2 py-4 italic">No history yet</div>
+                            )}
                         </div>
 
                     </div>
