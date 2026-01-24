@@ -33,6 +33,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { toast } from "sonner"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { CognitiveEmotionalAnalysis } from "@/components/dashboard/cognitive-emotional-analysis"
 
 import { dataEventEmitter, DATA_UPDATED_EVENT } from "@/lib/events"
 
@@ -282,6 +283,23 @@ export default function GamifiedDashboard() {
             : url
     }
 
+    const handleRemoveFriend = async (friendId: string) => {
+        if (!confirm("Are you sure you want to remove this friend?")) return;
+        try {
+            const res = await fetch('/api/social', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'remove_friend', friendId })
+            });
+            if (res.ok) {
+                toast.success("Friend removed");
+                fetchSocialData();
+            }
+        } catch (error) {
+            toast.error("Failed to remove friend");
+        }
+    }
+
     const userName = user?.user_metadata?.full_name || user?.user_metadata?.first_name || user?.email?.split('@')[0] || "User"
     const userEmail = user?.email || ""
     const userAvatar = optimizeAvatarUrl(user?.user_metadata?.avatar_url)
@@ -334,7 +352,7 @@ export default function GamifiedDashboard() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
                 {/* Header Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 sm:mb-12">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 sm:mb-12 border-b border-white/5 pb-8 sm:pb-12">
                     {/* Left: Branding & Nav */}
                     <div className="flex flex-col justify-between py-2">
                         <div className="flex items-center gap-4 sm:gap-6 mb-8">
@@ -400,7 +418,7 @@ export default function GamifiedDashboard() {
                                 <Avatar className="h-full w-full rounded-xl">
                                     <AvatarImage src={userAvatar} className="object-cover" />
                                     <AvatarFallback className="bg-zinc-800 text-emerald-400 text-3xl font-black">
-                                        <User className="w-10 h-10" />
+                                        {userName.charAt(0)}
                                     </AvatarFallback>
                                 </Avatar>
                             </div>
@@ -411,10 +429,12 @@ export default function GamifiedDashboard() {
                                 <div className="mb-4 bg-zinc-900/50 border border-white/5 rounded-xl p-4 min-h-[80px]">
                                     <div className="flex items-center justify-between mb-0.5">
                                         <h3 className="text-lg font-bold text-white">{userName}</h3>
-                                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-md">
-                                            <Trophy className="w-3 h-3 text-emerald-500" />
-                                            <span className="text-[10px] font-black text-emerald-400">LVL {profile.level}</span>
-                                        </div>
+                                        {profile && (
+                                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-md">
+                                                <Trophy className="w-3 h-3 text-emerald-500" />
+                                                <span className="text-[10px] font-black text-emerald-400">LVL {profile.level}</span>
+                                            </div>
+                                        )}
                                     </div>
                                     <p className="text-sm text-zinc-500 font-medium tracking-tight mb-2">
                                         {userEmail}
@@ -427,9 +447,7 @@ export default function GamifiedDashboard() {
                                     </div>
                                 </div>
 
-                                {/* Action Buttons Row */}
                                 <div className="flex items-center gap-3">
-                                    {/* Notification Popover */}
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <button className="flex-1 h-12 rounded-xl bg-zinc-900 border border-white/5 flex items-center justify-center gap-2 hover:bg-white/5 transition-all group/btn relative cursor-pointer font-bold uppercase tracking-widest text-xs text-zinc-400 hover:text-white">
@@ -498,11 +516,10 @@ export default function GamifiedDashboard() {
                     )}
                 </div>
 
-                <div className="flex flex-col lg:flex-row gap-6 items-stretch lg:h-[730px]">
-                    {/* Left Panel (60%) - Calendar */}
-                    <div className="lg:w-[60%] flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-2 duration-700">
-                        <div className="flex-1 flex flex-col p-8 rounded-[32px] bg-[#0c0c0c] border border-white/5 min-h-0 overflow-hidden shadow-2xl">
-                            {/* Calendar Header etc (unchanged but wrapped in nicer container) */}
+                <div className="flex flex-col lg:flex-row gap-6 items-start mb-8">
+                    {/* Left: Calendar */}
+                    <div className="lg:w-[60%] w-full animate-in fade-in slide-in-from-bottom-2 duration-700">
+                        <div className="bg-[#0c0c0c] border border-white/5 rounded-[32px] p-8 shadow-2xl">
                             <div className="flex items-center justify-between mb-10 shrink-0">
                                 <div className="flex items-baseline gap-2">
                                     <h2 className="text-2xl font-bold text-white tracking-tight">
@@ -513,53 +530,42 @@ export default function GamifiedDashboard() {
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-1">
-                                    <Button
-                                        onClick={prevMonth}
-                                        size="icon"
-                                        variant="ghost"
-                                        className="h-9 w-9 text-white/40 hover:text-white hover:bg-white/5 cursor-pointer"
-                                    >
+                                    <Button onClick={prevMonth} size="icon" variant="ghost" className="h-9 w-9 text-white/40 hover:text-white hover:bg-white/5 cursor-pointer">
                                         <ChevronLeft className="w-5 h-5" />
                                     </Button>
-                                    <Button
-                                        onClick={nextMonth}
-                                        size="icon"
-                                        variant="ghost"
-                                        className="h-9 w-9 text-white/40 hover:text-white hover:bg-white/5 cursor-pointer"
-                                    >
+                                    <Button onClick={nextMonth} size="icon" variant="ghost" className="h-9 w-9 text-white/40 hover:text-white hover:bg-white/5 cursor-pointer">
                                         <ChevronRight className="w-5 h-5" />
                                     </Button>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-7 mb-6 shrink-0">
+                            <div className="grid grid-cols-7 mb-6">
                                 {DayNames.map(day => (
-                                    <div key={day} className="text-center text-[10px] font-black tracking-[0.15em] text-white/20">
+                                    <div key={day} className="text-center text-[10px] font-black tracking-[0.15em] text-white/20 uppercase">
                                         {day}
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="flex-1 grid grid-cols-7 gap-y-1 min-h-0">
+                            <div className="grid grid-cols-7 gap-y-1">
                                 {calendarDays.map((date, idx) => {
                                     const dateKey = date ? formatDateToLocalISO(date) : null
                                     const hasEvent = dateKey && eventDates.has(dateKey);
-
                                     return (
                                         <div key={idx} className="h-20 flex items-center justify-center">
                                             {date && (
                                                 <div
                                                     onClick={() => handleDateClick(date)}
                                                     className={cn(
-                                                        "size-16 rounded-2xl flex items-center justify-center transition-all relative cursor-pointer text-base",
+                                                        "w-16 h-16 rounded-2xl flex items-center justify-center transition-all relative cursor-pointer text-base font-bold",
                                                         isToday(date)
-                                                            ? "bg-emerald-500 text-black font-black shadow-[0_0_25px_rgba(16,185,129,0.25)] scale-105"
+                                                            ? "bg-emerald-500 text-black shadow-[0_0_25px_rgba(16,185,129,0.25)] scale-105"
                                                             : "text-white/40 hover:bg-white/5 hover:text-white border border-transparent hover:border-white/10"
                                                     )}
                                                 >
                                                     <span className="z-10">{date.getDate()}</span>
                                                     {hasEvent && !isToday(date) && (
-                                                        <div className="absolute bottom-3 w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+                                                        <div className="absolute bottom-3 w-1.5 h-1.5 rounded-full bg-emerald-500" />
                                                     )}
                                                     {isToday(date) && hasEvent && (
                                                         <div className="absolute bottom-3 w-1.5 h-1.5 rounded-full bg-black/40" />
@@ -573,10 +579,10 @@ export default function GamifiedDashboard() {
                         </div>
                     </div>
 
-                    {/* Right Panel (40%) - Real Leaderboard */}
-                    <div className="lg:w-[40%] animate-in fade-in slide-in-from-right-2 duration-700 delay-100 flex flex-col">
-                        <div className="flex-1 flex flex-col p-8 rounded-[32px] bg-[#0c0c0c] border border-white/5 overflow-hidden shadow-2xl">
-                            <div className="flex items-center justify-between mb-12 shrink-0">
+                    {/* Right: Leaderboard */}
+                    <div className="lg:w-[40%] w-full animate-in fade-in slide-in-from-right-2 duration-700 delay-100 flex flex-col">
+                        <div className="bg-[#0c0c0c] border border-white/5 rounded-[32px] p-8 shadow-2xl flex flex-col min-h-[600px]">
+                            <div className="flex items-center justify-between mb-12">
                                 <div className="flex -space-x-2">
                                     {leaderboard.slice(0, 3).map((person, i) => (
                                         <Avatar key={i} className="border-2 border-[#060606] w-9 h-9 ring-1 ring-white/5">
@@ -585,84 +591,58 @@ export default function GamifiedDashboard() {
                                         </Avatar>
                                     ))}
                                     {leaderboard.length > 3 && (
-                                        <div className="flex items-center justify-center w-9 h-9 rounded-full bg-zinc-800 border-2 border-[#060606] text-[9px] font-bold text-white/20 ring-1 ring-white/5">
+                                        <div className="flex items-center justify-center w-9 h-9 rounded-full bg-zinc-800 border-2 border-[#060606] text-[9px] font-bold text-white/20">
                                             +{leaderboard.length - 3}
                                         </div>
                                     )}
                                 </div>
-                                <Button
-                                    onClick={() => setIsAddFriendOpen(true)}
-                                    size="icon"
-                                    variant="secondary"
-                                    className="h-10 w-10 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black shadow-lg shadow-emerald-500/20 transition-all cursor-pointer border-none flex items-center justify-center"
-                                >
+                                <Button onClick={() => setIsAddFriendOpen(true)} size="icon" className="h-10 w-10 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black shadow-emerald-500/20 shadow-lg border-none flex items-center justify-center cursor-pointer">
                                     <Plus className="w-5 h-5 font-bold" />
                                 </Button>
                             </div>
 
-                            <div className="mb-6 shrink-0">
+                            <div className="mb-6">
                                 <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-white/30">Current Ranking</h2>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-2 pb-4">
+                            <div className="flex-1 space-y-2 overflow-y-auto pr-2 custom-scrollbar">
                                 {leaderboard.map((player) => (
-                                    <div
-                                        key={player.id}
-                                        className={cn(
-                                            "group flex items-center justify-between p-4 rounded-2xl transition-all border",
-                                            player.rank === 1 ? "bg-yellow-500/[0.04] border-yellow-500/10 hover:bg-yellow-500/[0.06]" :
-                                                player.rank === 2 ? "bg-slate-400/[0.04] border-slate-400/10 hover:bg-slate-400/[0.06]" :
-                                                    player.rank === 3 ? "bg-orange-800/[0.04] border-orange-800/10 hover:bg-orange-800/[0.06]" :
-                                                        "bg-transparent border-transparent hover:bg-white/[0.01]"
-                                        )}
-                                    >
+                                    <div key={player.id} className={cn("group flex items-center justify-between p-4 rounded-2xl transition-all border", player.rank === 1 ? "bg-yellow-500/[0.04] border-yellow-500/10" : player.rank === 2 ? "bg-slate-400/[0.04] border-slate-400/10" : player.rank === 3 ? "bg-orange-800/[0.04] border-orange-800/10" : "bg-transparent border-transparent hover:bg-white/[0.01]")}>
                                         <div className="flex items-center gap-4">
                                             <div className="relative">
                                                 <Avatar className="h-12 w-12 rounded-xl shrink-0 group-hover:scale-105 transition-transform">
                                                     <AvatarImage src={optimizeAvatarUrl(player.avatar)} />
                                                     <AvatarFallback className="bg-zinc-800 font-bold">{player.name.charAt(0)}</AvatarFallback>
                                                 </Avatar>
-                                                {player.id === user?.id && (
-                                                    <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#0c0c0c] rounded-full" />
-                                                )}
+                                                {player.id === user?.id && <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#0c0c0c] rounded-full" />}
                                             </div>
                                             <div>
                                                 <p className="font-bold text-[14px] text-white/90">{player.name} {player.id === user?.id && "(You)"}</p>
                                                 <div className="flex items-center gap-2 mt-1">
-                                                    <div className="px-1.5 py-0.5 bg-white/5 rounded text-[9px] font-black text-zinc-500 uppercase tracking-widest">
-                                                        LVL {player.level}
-                                                    </div>
+                                                    <div className="px-1.5 py-0.5 bg-white/5 rounded text-[9px] font-black text-zinc-500 uppercase">LVL {player.level}</div>
                                                     <p className="text-[10px] font-bold text-emerald-500/60">{player.xp} XP</p>
                                                 </div>
                                             </div>
                                         </div>
-
                                         <div className="flex items-center gap-3">
-                                            <div className={cn(
-                                                "w-8 h-8 rounded-xl flex items-center justify-center text-[11px] font-black border transition-all",
-                                                player.rank === 1 ? "bg-yellow-500/20 text-yellow-500 border-yellow-500/20 shadow-[0_0_15px_rgba(234,179,8,0.15)]" :
-                                                    player.rank === 2 ? "bg-slate-400/20 text-slate-400 border-slate-400/20" :
-                                                        player.rank === 3 ? "bg-orange-800/20 text-orange-800 border-orange-800/20" :
-                                                            "bg-white/5 text-white/20 border-white/5"
-                                            )}>
-                                                {player.rank <= 3 ? (
-                                                    <Trophy className="w-4 h-4" />
-                                                ) : (
-                                                    player.rank
-                                                )}
+                                            {player.id !== user?.id && (
+                                                <button onClick={() => handleRemoveFriend(player.id)} className="opacity-0 group-hover:opacity-100 p-2 text-zinc-500 hover:text-red-500 transition-all cursor-pointer">
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                            <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center text-[11px] font-black border", player.rank === 1 ? "bg-yellow-500/20 text-yellow-500 border-yellow-500/20" : player.rank === 2 ? "bg-slate-400/20 text-slate-400 border-slate-400/20" : player.rank === 3 ? "bg-orange-800/20 text-orange-800 border-orange-800/20" : "bg-white/5 text-white/20 border-white/5")}>
+                                                {player.rank <= 3 ? <Trophy className="w-4 h-4" /> : player.rank}
                                             </div>
                                         </div>
                                     </div>
                                 ))}
-                                {leaderboard.length === 0 && (
-                                    <div className="flex flex-col items-center justify-center py-20 opacity-20">
-                                        <ScrollText className="w-10 h-10 mb-4" />
-                                        <p className="text-sm font-bold uppercase tracking-widest">Syncing Rank...</p>
-                                    </div>
-                                )}
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                    <CognitiveEmotionalAnalysis />
                 </div>
             </div>
 
@@ -672,42 +652,26 @@ export default function GamifiedDashboard() {
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-bold text-white tracking-tight">Add Friend</DialogTitle>
                         <DialogDescription className="text-zinc-500">
-                            Invite your friends to Kairos by their email address to compete and stay consistent together.
+                            Invite your friends to Kairos by their email address to compete together.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex items-center space-x-2 py-4">
-                        <div className="grid flex-1 gap-2">
-                            <Input
-                                id="email"
-                                placeholder="friend@example.com"
-                                value={friendEmail}
-                                onChange={(e) => setFriendEmail(e.target.value)}
-                                className="bg-zinc-900 border-white/5 rounded-xl h-12 text-white focus:border-emerald-500/50 transition-all"
-                            />
-                        </div>
+                        <Input
+                            placeholder="friend@example.com"
+                            value={friendEmail}
+                            onChange={(e) => setFriendEmail(e.target.value)}
+                            className="bg-zinc-900 border-white/5 rounded-xl h-12 text-white"
+                        />
                     </div>
-                    <DialogFooter className="sm:justify-end">
-                        <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={() => setIsAddFriendOpen(false)}
-                            className="rounded-xl h-11 px-6 hover:bg-white/5 border-none"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="button"
-                            onClick={handleSendRequest}
-                            disabled={isSubmittingFriend || !friendEmail}
-                            className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold px-8 rounded-xl h-11 shadow-lg shadow-emerald-500/20 disabled:opacity-50"
-                        >
+                    <DialogFooter>
+                        <Button onClick={() => setIsAddFriendOpen(false)} variant="secondary" className="rounded-xl">Cancel</Button>
+                        <Button onClick={handleSendRequest} disabled={isSubmittingFriend || !friendEmail} className="bg-emerald-500 text-black font-bold rounded-xl shadow-lg shadow-emerald-500/20">
                             {isSubmittingFriend ? "Sending..." : "Send Request"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
-            {/* Date Details Modal */}
             <DateDetailsModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -715,5 +679,5 @@ export default function GamifiedDashboard() {
                 onEventAdded={fetchEvents}
             />
         </div>
-    )
+    );
 }
