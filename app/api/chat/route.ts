@@ -6,8 +6,21 @@ import Transaction from '@/models/Transaction';
 import Habit from '@/models/Habit';
 import Profile from '@/models/Profile';
 import ChatSession from '@/models/ChatSession';
+import { allTools, toolsMap } from '@/tools/tools-index';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const API_KEYS = [
+    process.env.GEMINI_API_KEY_PP_1,
+    process.env.GEMINI_API_KEY_PD_1,
+    process.env.GEMINI_API_KEY_KJ_1
+].filter(Boolean) as string[];
+
+let currentKeyIndex = 0;
+
+function getGenAI() {
+    const key = API_KEYS[currentKeyIndex];
+    currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
+    return new GoogleGenerativeAI(key);
+}
 
 export async function POST(req: NextRequest) {
     try {
@@ -16,11 +29,13 @@ export async function POST(req: NextRequest) {
         if (!userPayload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         const userId = userPayload.userId;
 
-        const { message, mode = 'general', sessionId } = await req.json();
+        const { message, mode = 'general', sessionId, localTime } = await req.json();
 
         if (!message) {
             return NextResponse.json({ error: "Message is required" }, { status: 400 });
         }
+
+        const currentTime = localTime || new Date().toLocaleString();
 
         let session;
         if (sessionId) {
@@ -53,43 +68,123 @@ export async function POST(req: NextRequest) {
                 : 'Life Context: No active habits being tracked.';
         }
 
-        const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash",
-            systemInstruction: `You are Kairos AI, a premium personal assistant. 
-Mode: ${mode}
-User Name: ${userName}
-Current Context: ${context}
-
-Instructions:
-1. Provide concise, helpful advice.
-2. If in finance mode, focus on budget and spending.
-3. If in general mode, focus on habits, productivity, and well-being.
-4. Always maintain a premium, professional yet friendly tone.
-5. Use markdown for formatting.`
-        });
-
-        // Format history for Gemini SDK
         const history = session.messages.map((m: any) => ({
             role: m.role === 'user' ? 'user' : 'model',
             parts: [{ text: m.content }]
         }));
 
-        const chat = model.startChat({
-            history: history,
-        });
+        let response: any;
+        let responseText = "";
+        let success = false;
+        let attempts = 0;
 
-        const result = await chat.sendMessage(message);
-        const responseText = result.response.text();
+        while (!success && attempts < API_KEYS.length) {
+            try {
+                const genAI = getGenAI();
+                const model = genAI.getGenerativeModel({
+                    model: "gemini-3-flash-preview",
+                    tools: [{
+                        functionDeclarations: allTools.map(t => ({
+                            name: t.name,
+                            description: t.description,
+                            parameters: t.parameters as any
+                        }))
+                    }],
+                    systemInstruction: `You are Kairos AI, a premium personal assistant. 
+Mode: ${mode}
+User Name: ${userName}
+Current Context: ${context}
+Today's Date: ${currentTime} (Always use this for relative dates like 'tomorrow', 'next week', etc.)
+
+Instructions:
+1. Provide concise, helpful advice.
+2. If in finance mode, focus on budget and spending.
+3. If in general mode, focus on habits, productivity, and well-being.
+4. Use the provided tools to help the user with their data (finance, habits, mood, tasks, etc.).
+5. If a tool is called, use its output to provide a final response to the user.
+6. Always maintain a premium, professional yet friendly tone.
+8. Use proper GitHub Flavored Markdown (GFM). 
+9. When creating tables, ensure they are preceded and followed by a blank line, and use standard pipe and dash syntax.
+10. Do not use random symbols; keep the layout clean and professional.`
+                });
+
+                const chat = model.startChat({ history });
+                response = await chat.sendMessage(message);
+
+                // RE-ACT LOOP
+                for (let i = 0; i < 5; i++) {
+                    const candidate = response.response.candidates?.[0];
+                    const parts = candidate?.content?.parts || [];
+                    const calls = parts.filter((p: any) => p.functionCall);
+
+                    if (calls.length === 0) {
+                        responseText = response.response.text();
+                        break;
+                    }
+
+                    const toolResponses = [];
+                    for (const call of calls) {
+                        const toolName = call.functionCall!.name;
+                        const toolArgs = call.functionCall!.args;
+                        const tool = toolsMap[toolName];
+
+                        if (tool) {
+                            console.log(`[AI TOOL CALL] ${toolName}`, toolArgs);
+                            const result = await tool.execute(toolArgs, userId);
+                            toolResponses.push({
+                                functionResponse: {
+                                    name: toolName,
+                                    response: result
+                                }
+                            });
+                        } else {
+                            toolResponses.push({
+                                functionResponse: {
+                                    name: toolName,
+                                    response: { error: "Tool not found" }
+                                }
+                            });
+                        }
+                    }
+
+                    response = await chat.sendMessage(toolResponses);
+                    responseText = response.response.text();
+                }
+                success = true;
+            } catch (error: any) {
+                console.error(`Attempt ${attempts + 1} failed with key index ${currentKeyIndex}:`, error.message);
+                attempts++;
+                const isRetryable =
+                    error.message?.includes('429') ||
+                    error.message?.includes('quota') ||
+                    error.message?.includes('503') ||
+                    error.message?.includes('overloaded');
+
+                if (isRetryable) {
+                    if (attempts >= API_KEYS.length) throw error;
+                    continue; // try next key
+                }
+                throw error;
+            }
+        }
+
+        // Final safety check for responseText
+        if (!responseText && response.response) {
+            responseText = response.response.text();
+        }
+
+        const finalContent = responseText || "I've processed your request.";
 
         // Update session
         session.messages.push({ role: 'user', content: message, timestamp: new Date() });
-        session.messages.push({ role: 'assistant', content: responseText, timestamp: new Date() });
+        session.messages.push({ role: 'assistant', content: finalContent, timestamp: new Date() });
 
         // Auto-rename if "mature" (e.g., after 2 user messages / 4 total messages)
         // and if it still has a default-style title or only first message title
         if (session.messages.length === 4) {
             try {
-                const namingModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+                const namingGenAI = getGenAI();
+                const namingModel = namingGenAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
                 const prompt = `Based on the following conversation snippets, generate a very short (3-5 words), professional title for this chat. Respond ONLY with the title.
                 
                 User: ${session.messages[0].content}
@@ -110,7 +205,7 @@ Instructions:
         await session.save();
 
         return NextResponse.json({
-            response: responseText,
+            response: finalContent,
             sessionId: session._id,
             title: session.title
         });

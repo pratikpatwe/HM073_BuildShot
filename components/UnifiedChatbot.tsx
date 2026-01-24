@@ -6,6 +6,8 @@ import { ChatBubbleBottomCenterTextIcon, MicrophoneIcon } from "@heroicons/react
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 
 interface Message {
     id: string
@@ -133,9 +135,15 @@ export default function UnifiedChatbot({
                 body: JSON.stringify({
                     message: userMessage.content,
                     mode: mode,
-                    sessionId: currentSessionId
+                    sessionId: currentSessionId,
+                    localTime: new Date().toLocaleString()
                 }),
             });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `Server responded with ${response.status}`);
+            }
 
             const data = await response.json();
 
@@ -151,14 +159,26 @@ export default function UnifiedChatbot({
                     fetchSessions();
                 }
             } else {
-                throw new Error(data.error || 'Failed to get response');
+                throw new Error('No response content received from AI');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Chat error:', error);
+
+            const isQuotaError = error.message?.includes('429') || error.message?.includes('quota');
+
+            if (isQuotaError) {
+                toast.error("AI Quota Exceeded", {
+                    description: "You've reached the free tier limit. Please try again in a few minutes.",
+                    duration: 5000,
+                });
+            }
+
             const errorMessage: Message = {
                 id: (Date.now() + 2).toString(),
                 role: "assistant",
-                content: "I'm sorry, I'm having trouble connecting right now. Please try again later."
+                content: isQuotaError
+                    ? "I've reached my daily limit for now. Please wait a bit or check back tomorrow!"
+                    : `I'm sorry, I'm having trouble: ${error.message || "Unknown connection error"}`
             };
             setMessages(prev => [...prev, errorMessage]);
         } finally {
@@ -298,8 +318,30 @@ export default function UnifiedChatbot({
                                                     ? 'bg-emerald-500 text-black rounded-2xl px-5 py-3 shadow-lg shadow-emerald-500/20'
                                                     : 'text-white/90 leading-relaxed'
                                                     }`}>
-                                                    <div className="prose prose-invert prose-sm max-w-none whitespace-pre-wrap">
-                                                        {message.content}
+                                                    <div className="prose prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-white/5 prose-table:my-4 prose-table:border-collapse prose-table:w-full prose-table:text-left">
+                                                        {message.role === 'assistant' ? (
+                                                            <ReactMarkdown
+                                                                remarkPlugins={[remarkGfm]}
+                                                                components={{
+                                                                    table: ({ node, ...props }) => (
+                                                                        <div className="overflow-x-auto my-6 rounded-2xl border border-white/5 bg-white/[0.02]">
+                                                                            <table className="min-w-full border-collapse" {...props} />
+                                                                        </div>
+                                                                    ),
+                                                                    thead: ({ node, ...props }) => <thead className="bg-white/[0.05]" {...props} />,
+                                                                    th: ({ node, ...props }) => (
+                                                                        <th className="px-5 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 border-b border-white/5" {...props} />
+                                                                    ),
+                                                                    td: ({ node, ...props }) => (
+                                                                        <td className="px-5 py-4 text-sm border-b border-white/[0.02] text-white/70" {...props} />
+                                                                    ),
+                                                                }}
+                                                            >
+                                                                {message.content}
+                                                            </ReactMarkdown>
+                                                        ) : (
+                                                            <div className="whitespace-pre-wrap">{message.content}</div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
@@ -416,7 +458,27 @@ export default function UnifiedChatbot({
                                     : "bg-white/5 text-white/80 rounded-bl-sm border border-white/5"
                                     }`}
                             >
-                                {message.content}
+                                {message.role === 'assistant' ? (
+                                    <div className="prose prose-invert prose-sm max-w-none">
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm]}
+                                            components={{
+                                                table: ({ node, ...props }) => (
+                                                    <div className="overflow-x-auto my-4 rounded-xl border border-white/10 bg-white/[0.03]">
+                                                        <table className="min-w-full border-collapse" {...props} />
+                                                    </div>
+                                                ),
+                                                thead: ({ node, ...props }) => <thead className="bg-white/5" {...props} />,
+                                                th: ({ node, ...props }) => <th className="px-3 py-2 text-[9px] font-bold uppercase text-emerald-500 border-b border-white/10" {...props} />,
+                                                td: ({ node, ...props }) => <td className="px-3 py-2 text-[12px] border-b border-white/5 text-white/60" {...props} />,
+                                            }}
+                                        >
+                                            {message.content}
+                                        </ReactMarkdown>
+                                    </div>
+                                ) : (
+                                    <div className="whitespace-pre-wrap">{message.content}</div>
+                                )}
                             </div>
                         </div>
                     ))}

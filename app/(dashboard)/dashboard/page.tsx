@@ -23,7 +23,7 @@ import {
     User,
 } from "lucide-react"
 
-import { cn } from "@/lib/utils"
+import { cn, formatDateToLocalISO } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DateDetailsModal } from "@/components/dashboard/date-details-modal"
@@ -505,7 +505,7 @@ export default function GamifiedDashboard() {
 
                             <div className="flex-1 grid grid-cols-7 gap-y-1 min-h-0">
                                 {calendarDays.map((date, idx) => {
-                                    const dateKey = date ? date.toISOString().split('T')[0] : null
+                                    const dateKey = date ? formatDateToLocalISO(date) : null
                                     const hasEvent = dateKey && eventDates.has(dateKey);
 
                                     return (
